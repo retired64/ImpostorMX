@@ -1,21 +1,23 @@
-# 🕵️‍♂️ Impostor MX
+<img width="1080" height="505" alt="impostorMX" src="https://github.com/user-attachments/assets/f1e78ab6-79df-42ac-9c68-a85320593278" />
 
-Una implementación robusta y moderna del clásico juego de mesa "Impostor/Espía" desarrollada completamente en Flutter.
 
-## 🚀 Características Técnicas
-* **Arquitectura Limpia:** Separación estricta de `screens`, `widgets`, `providers` y `config`.
-* **Gestión de Estado:** Uso eficiente de `Provider` para el manejo reactivo del juego.
-* **Algoritmo RNG Seguro:** Sistema de selección de impostor basado en entropía de tiempo y barajado criptográfico (sin patrones predecibles).
-* **UX/UI Pulida:** Animaciones personalizadas (3D Card Flip, Staggered Lists), Feedback Háptico y Diseño de Sonido.
-* **Persistencia de Datos:** Almacenamiento local de categorías personalizadas.
-* **Privacidad:** 100% Offline, sin trackers ni permisos innecesarios.
+![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white) ![Dart](https://img.shields.io/badge/dart-%230175C2.svg?style=for-the-badge&logo=dart&logoColor=white) ![License](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge)
 
-## 🛠️ Tech Stack
-* **Framework:** Flutter & Dart
-* **State Management:** Provider
-* **Audio:** AudioPlayers
-* **Hardware:** Vibration, Wakelock Plus
-* **UI:** Google Fonts, Flutter Staggered Animations
+¡La versión digital y libre del clásico juego de fiesta! Reúne a tus amigos, pasen el teléfono y descubran quién está mintiendo.
 
-## 📄 Licencia
-Este proyecto está bajo la licencia **GNU GPLv3**.
+**¿Por qué Impostor MX?**
+A diferencia de otras apps en la tienda, Impostor MX respeta tu libertad:
+* 🚫 **Sin Anuncios:** Juega sin interrupciones.
+* 📴 **100% Offline:** No necesitas internet. Ideal para viajes o fiestas.
+* 🔓 **Código Abierto:** Puedes auditar el código, es transparente y seguro.
+
+## 🎮 Cómo Jugar
+1.  Configura los jugadores y el tiempo.
+2.  Pasa el teléfono: Todos verán una palabra secreta, excepto el **Impostor**.
+3.  Debatan y voten: El Impostor debe mentir para encajar; los civiles deben atraparlo.
+
+## 📥 Descarga
+Disponible en [F-Droid] (próximamente) y [Releases de GitHub].
+
+## 🤝 Contribuir
+¡Las Pull Requests son bienvenidas! El código sigue una estructura modular limpia para facilitar la colaboración.
