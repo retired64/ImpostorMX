@@ -48,14 +48,19 @@ class GameProvider with ChangeNotifier {
   int remainingSeconds = 0;
   bool isTimerRunning = false;
   GameStatus status = GameStatus.setup;
-  late AudioPlayer _audioPlayer;
+
+  late AudioPlayer _audioPlayer; // Alarma final
+  final AudioPlayer _effectPlayer = AudioPlayer(); // NUEVO: Efecto Tic-Tac
   bool _isPlayingAudio = false;
 
   GameProvider() {
     _audioPlayer = AudioPlayer();
+    // Pre-cargamos el sonido del tic-tac para evitar retrasos
+    _effectPlayer.setSource(AssetSource('sounds/tictac.mp3'));
+
     _initGame();
     _loadCustomCategories();
-    _loadPunishments(); // <--- NUEVO: Cargar castigos al iniciar
+    _loadPunishments();
   }
 
   void _initGame() {
@@ -107,15 +112,12 @@ class GameProvider with ChangeNotifier {
   }
 
   // --- PERSISTENCIA (CASTIGOS / RULETA) ---
-  // Esta es la sección nueva que maneja la ruleta personalizable
-
   Future<void> _loadPunishments() async {
     final prefs = await SharedPreferences.getInstance();
     final stored = prefs.getStringList(GameConstants.prefsPunishments);
     if (stored != null && stored.isNotEmpty) {
       punishments = stored;
     } else {
-      // Si es la primera vez, cargamos los defaults de constants.dart
       punishments = List.from(GameConstants.punishments);
     }
     notifyListeners();
@@ -128,7 +130,6 @@ class GameProvider with ChangeNotifier {
   }
 
   Future<void> removePunishment(int index) async {
-    // Evitamos dejar la lista vacía para que no truene la ruleta
     if (punishments.length > 1) {
       punishments.removeAt(index);
       await _savePunishments();
@@ -147,7 +148,7 @@ class GameProvider with ChangeNotifier {
     await prefs.setStringList(GameConstants.prefsPunishments, punishments);
   }
 
-  // --- HARDWARE ---
+  // --- HARDWARE (AUDIO & VIBRACIÓN) ---
   Future<void> playAlarm() async {
     try {
       if (_isPlayingAudio) await _audioPlayer.stop();
@@ -158,9 +159,19 @@ class GameProvider with ChangeNotifier {
     }
   }
 
+  // NUEVO: Función para reproducir el tic-tac corto
+  Future<void> _playTick() async {
+    try {
+      if (_effectPlayer.state == PlayerState.playing)
+        await _effectPlayer.stop();
+      await _effectPlayer.play(AssetSource('sounds/tictac.mp3'), volume: 1.0);
+    } catch (_) {}
+  }
+
   void stopAudio() {
     try {
       _audioPlayer.stop();
+      _effectPlayer.stop(); // También detenemos el efecto si se cancela
     } catch (_) {}
     _isPlayingAudio = false;
   }
@@ -257,11 +268,9 @@ class GameProvider with ChangeNotifier {
   void startGame() {
     if (selectedCategory == null) return;
 
-    // 1. Filtrar jugadores listos
     final lockedPlayers = players.where((p) => p.isLocked).toList();
     if (lockedPlayers.length < GameConstants.minPlayers) return;
 
-    // 2. Limpieza TOTAL de estado anterior
     stopAudio();
     _timer?.cancel();
     isTimerRunning = false;
@@ -270,14 +279,10 @@ class GameProvider with ChangeNotifier {
       p.role = 'civilian';
     }
 
-    // 3. GENERADOR DE CAOS
     final random = Random(DateTime.now().microsecondsSinceEpoch);
-
-    // Selección de Palabra
     secretWord =
         selectedCategory!.words[random.nextInt(selectedCategory!.words.length)];
 
-    // 4. SELECCIÓN DE IMPOSTOR
     int safeImpostorCount = impostorCount;
     if (safeImpostorCount >= lockedPlayers.length) safeImpostorCount = 1;
 
@@ -293,7 +298,6 @@ class GameProvider with ChangeNotifier {
       bagOfIndices.removeAt(randomIndex);
     }
 
-    // 5. Inicializar Turnos
     currentTurnIndex = 0;
     status = GameStatus.playing;
     remainingSeconds = initialTimeSeconds;
@@ -314,7 +318,7 @@ class GameProvider with ChangeNotifier {
     return active[currentTurnIndex];
   }
 
-  // --- TIMER ---
+  // --- TIMER (MODIFICADO CON TIC-TAC) ---
   void startTimer() {
     WakelockPlus.enable();
     isTimerRunning = true;
@@ -323,6 +327,23 @@ class GameProvider with ChangeNotifier {
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (remainingSeconds > 0) {
         remainingSeconds--;
+
+        // >>> NUEVA LÓGICA DE TENSIÓN <<<
+        if (remainingSeconds <= 10 && remainingSeconds > 0) {
+          // 1. Reproducir sonido Tic-Tac
+          _playTick();
+
+          // 2. Vibración Progresiva
+          if (remainingSeconds <= 5) {
+            // Últimos 5 seg: Vibración doble (más estrés)
+            Vibration.vibrate(pattern: [0, 50, 50, 50]);
+          } else {
+            // Del 10 al 6: Vibración simple (tic)
+            Vibration.vibrate(duration: 50);
+          }
+        }
+        // >>> FIN NUEVA LÓGICA <<<
+
         notifyListeners();
       } else {
         stopTimer(finished: true);
@@ -407,6 +428,7 @@ class GameProvider with ChangeNotifier {
   void dispose() {
     _timer?.cancel();
     _audioPlayer.dispose();
+    _effectPlayer.dispose(); // Limpiamos el nuevo reproductor
     super.dispose();
   }
 }
