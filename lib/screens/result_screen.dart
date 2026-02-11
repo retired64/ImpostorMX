@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
 import 'package:provider/provider.dart';
 import 'package:vibration/vibration.dart';
+import 'package:confetti/confetti.dart'; // <--- 1. IMPORTAR LIBRERÍA
 import '../providers/game_provider.dart';
 import '../widgets/inputs.dart';
 import '../config/theme.dart';
@@ -18,7 +19,7 @@ class ResultScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isImpostor = votedPlayer.role == 'impostor';
 
-    // Colores de fondo según el resultado (Verde si ganan civiles, Rojo si gana impostor)
+    // Colores de fondo según el resultado
     final bgColor = isImpostor
         ? const Color(0xFF00C853)
         : const Color(0xFFD50000);
@@ -39,24 +40,24 @@ class ResultScreen extends StatelessWidget {
             Text(
               winnerText,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'Bungee',
                 fontSize: 24,
                 color: Colors.white,
-                shadows: [const Shadow(blurRadius: 10, color: Colors.black45)],
+                shadows: [Shadow(blurRadius: 10, color: Colors.black45)],
               ),
             ),
             const SizedBox(height: 5),
             Text(
               loserTitle,
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'YoungSerif',
                 fontSize: 14,
                 color: Colors.white70,
               ),
             ),
 
-            // --- LA RULETA ---
+            // --- LA RULETA (Con Confeti integrado) ---
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -137,14 +138,12 @@ class PunishmentRoulette extends StatefulWidget {
 }
 
 class _PunishmentRouletteState extends State<PunishmentRoulette> {
-  // StreamController para manejar el giro de la ruleta
   final StreamController<int> _selected = StreamController<int>();
+  late ConfettiController _confettiController; // <--- 2. CONTROLADOR
 
   bool _isSpinning = false;
-  int _lastIndex =
-      0; // Guardamos el índice ganador para mostrar el texto correcto
+  int _lastIndex = 0;
 
-  // Colores vibrantes alternados para las rebanadas
   final List<Color> _colors = [
     Colors.redAccent,
     Colors.orangeAccent,
@@ -156,8 +155,18 @@ class _PunishmentRouletteState extends State<PunishmentRoulette> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    // Duración de la lluvia de confeti (3 segundos)
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 3),
+    );
+  }
+
+  @override
   void dispose() {
     _selected.close();
+    _confettiController.dispose(); // <--- IMPORTANTE: Limpiar memoria
     super.dispose();
   }
 
@@ -165,156 +174,177 @@ class _PunishmentRouletteState extends State<PunishmentRoulette> {
     if (_isSpinning) return;
 
     setState(() => _isSpinning = true);
-    SoundManager.playClick(); // Sonido inicial
+    SoundManager.playClick();
 
-    // 1. OBTENER LISTA DINÁMICA DEL PROVIDER
     final punishments = Provider.of<GameProvider>(
       context,
       listen: false,
     ).punishments;
 
-    // Elegimos un castigo aleatorio de la lista actual
     final index = Random().nextInt(punishments.length);
-    _lastIndex = index; // Lo guardamos para usarlo en el diálogo
-    _selected.add(index); // Le decimos a la ruleta que gire hasta ese índice
+    _lastIndex = index;
+    _selected.add(index);
   }
 
   @override
   Widget build(BuildContext context) {
-    // 2. ESCUCHAR CAMBIOS EN LA LISTA (Para construir la ruleta con los datos reales)
     final punishments = Provider.of<GameProvider>(context).punishments;
 
-    return Column(
+    // 3. ENVOLVER EN STACK PARA PONER EL CONFETI ENCIMA
+    return Stack(
+      alignment: Alignment.topCenter, // El confeti cae desde arriba al centro
       children: [
-        // ÁREA DE LA RULETA
-        Expanded(
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Borde exterior decorativo
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 6),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-                child: FortuneWheel(
-                  selected: _selected.stream,
-                  animateFirst: false,
-                  // Física: 4 segundos de giro con desaceleración
-                  physics: CircularPanPhysics(
-                    duration: const Duration(seconds: 4),
-                    curve: Curves.decelerate,
-                  ),
-                  // Acción al terminar de girar
-                  onAnimationEnd: () {
-                    setState(() => _isSpinning = false);
-                    Vibration.vibrate(
-                      pattern: [0, 50, 100, 500],
-                    ); // Vibración de éxito
-                    _showResultDialog();
-                  },
-                  // Indicador (Triángulo superior)
-                  indicators: const <FortuneIndicator>[
-                    FortuneIndicator(
-                      alignment: Alignment.topCenter,
-                      child: TriangleIndicator(color: Colors.white),
-                    ),
-                  ],
-                  // Generamos los items (rebanadas) dinámicamente usando la variable 'punishments'
-                  items: [
-                    for (int i = 0; i < punishments.length; i++)
-                      FortuneItem(
-                        style: FortuneItemStyle(
-                          color:
-                              _colors[i % _colors.length], // Alternar colores
-                          borderColor: Colors.white24,
-                          borderWidth: 2,
-                          textAlign: TextAlign.center,
-                          textStyle: const TextStyle(
-                            fontFamily: 'YoungSerif',
-                            fontSize: 14,
-                            color: Colors.black87,
-                          ),
+        // --- CAPA 1: La Ruleta y Botones ---
+        Column(
+          children: [
+            Expanded(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // La Rueda
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 6),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 20,
+                          spreadRadius: 5,
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(25.0),
-                          child: Text(
-                            punishments[i], // USAR EL TEXTO DINÁMICO
-                            textAlign: TextAlign.center,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
+                      ],
+                    ),
+                    child: FortuneWheel(
+                      selected: _selected.stream,
+                      animateFirst: false,
+                      physics: CircularPanPhysics(
+                        duration: const Duration(seconds: 4),
+                        curve: Curves.decelerate,
                       ),
-                  ],
-                ),
-              ),
+                      onAnimationEnd: () {
+                        setState(() => _isSpinning = false);
+                        Vibration.vibrate(pattern: [0, 50, 100, 500]);
 
-              // BOTÓN CENTRAL "?"
-              GestureDetector(
-                onTap: _spin,
-                child: Container(
-                  width: 70,
-                  height: 70,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.grey.shade300, width: 4),
-                    boxShadow: [
-                      const BoxShadow(blurRadius: 10, color: Colors.black26),
-                    ],
-                  ),
-                  alignment: Alignment.center,
-                  child: _isSpinning
-                      ? const CircularProgressIndicator(
-                          color: AppColors.accent,
-                          strokeWidth: 3,
-                        )
-                      : const Text(
-                          "?",
-                          style: TextStyle(
-                            fontFamily: 'Bungee',
-                            fontSize: 35,
-                            color: Colors.black87,
-                          ),
+                        // 4. DISPARAR CONFETI AL TERMINAR
+                        _confettiController.play();
+
+                        _showResultDialog();
+                      },
+                      indicators: const <FortuneIndicator>[
+                        FortuneIndicator(
+                          alignment: Alignment.topCenter,
+                          child: TriangleIndicator(color: Colors.white),
                         ),
+                      ],
+                      items: [
+                        for (int i = 0; i < punishments.length; i++)
+                          FortuneItem(
+                            style: FortuneItemStyle(
+                              color: _colors[i % _colors.length],
+                              borderColor: Colors.white24,
+                              borderWidth: 2,
+                              textAlign: TextAlign.center,
+                              textStyle: const TextStyle(
+                                fontFamily: 'YoungSerif',
+                                fontSize: 14,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(25.0),
+                              child: Text(
+                                punishments[i],
+                                textAlign: TextAlign.center,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  // Botón Central "?"
+                  GestureDetector(
+                    onTap: _spin,
+                    child: Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                          width: 4,
+                        ),
+                        boxShadow: [
+                          const BoxShadow(
+                            blurRadius: 10,
+                            color: Colors.black26,
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: _isSpinning
+                          ? const CircularProgressIndicator(
+                              color: AppColors.accent,
+                              strokeWidth: 3,
+                            )
+                          : const Text(
+                              "?",
+                              style: TextStyle(
+                                fontFamily: 'Bungee',
+                                fontSize: 35,
+                                color: Colors.black87,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            if (!_isSpinning)
+              BouncyButton(
+                text: "GIRAR RULETA",
+                color: Colors.white,
+                onPressed: _spin,
+              )
+            else
+              const Text(
+                "¡SUERTE!",
+                style: TextStyle(
+                  fontFamily: 'Bungee',
+                  fontSize: 20,
+                  color: Colors.white,
                 ),
               ),
-            ],
-          ),
+          ],
         ),
 
-        const SizedBox(height: 20),
-
-        // Botón grande inferior (alternativo al centro)
-        if (!_isSpinning)
-          BouncyButton(
-            text: "GIRAR RULETA",
-            color: Colors.white,
-            onPressed: _spin,
-          )
-        else
-          const Text(
-            "¡SUERTE!",
-            style: TextStyle(
-              fontFamily: 'Bungee',
-              fontSize: 20,
-              color: Colors.white,
-            ),
-          ),
+        // --- CAPA 2: El Widget de Confeti (Invisible hasta disparar) ---
+        ConfettiWidget(
+          confettiController: _confettiController,
+          blastDirectionality:
+              BlastDirectionality.explosive, // Explosión en todas direcciones
+          shouldLoop: false, // Solo una explosión, no infinito
+          colors: const [
+            Colors.green,
+            Colors.blue,
+            Colors.pink,
+            Colors.orange,
+            Colors.purple,
+          ],
+          gravity: 0.3, // Caída un poco lenta para apreciar
+          numberOfParticles: 25, // Cantidad de papeles
+        ),
       ],
     );
   }
 
   void _showResultDialog() {
-    // 3. OBTENER EL TEXTO DEL CASTIGO GANADOR DESDE EL PROVIDER
     final punishments = Provider.of<GameProvider>(
       context,
       listen: false,
@@ -353,7 +383,7 @@ class _PunishmentRouletteState extends State<PunishmentRoulette> {
               ),
               const SizedBox(height: 20),
               Text(
-                punishments[_lastIndex], // Muestra el castigo dinámico
+                punishments[_lastIndex],
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontFamily: 'YoungSerif',
