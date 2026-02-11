@@ -1,40 +1,132 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
 import 'package:provider/provider.dart';
 import 'package:vibration/vibration.dart';
 import '../providers/game_provider.dart';
 import '../widgets/inputs.dart';
 import '../config/theme.dart';
 import '../config/constants.dart';
+import '../utils/sound_manager.dart';
 import 'category_screen.dart';
 
 class ResultScreen extends StatelessWidget {
   final Player votedPlayer;
   const ResultScreen({super.key, required this.votedPlayer});
+
   @override
   Widget build(BuildContext context) {
     final bool isImpostor = votedPlayer.role == 'impostor';
-    final color = isImpostor ? AppColors.accent : AppColors.error;
-    final winnerText = isImpostor ? "¡GANAN LOS CIVILES!" : "¡GANA EL IMPOSTOR!";
-    final loserTitle = isImpostor ? "Castigo para el IMPOSTOR" : "Castigo para los CIVILES";
+
+    // Colores de fondo según el resultado (Verde si ganan civiles, Rojo si gana impostor)
+    final bgColor = isImpostor
+        ? const Color(0xFF00C853)
+        : const Color(0xFFD50000);
+    final winnerText = isImpostor
+        ? "¡GANAN LOS CIVILES!"
+        : "¡GANA EL IMPOSTOR!";
+    final loserTitle = isImpostor
+        ? "Castigo para el IMPOSTOR"
+        : "Castigo para los CIVILES";
 
     return Scaffold(
-      body: Container(color: color, child: SafeArea(child: Column(children: [
-        const SizedBox(height: 20),
-        Icon(isImpostor ? Icons.check_circle_outline : Icons.cancel_outlined, size: 80, color: Colors.black),
-        Text(winnerText, textAlign: TextAlign.center, style: AppTheme.heading(28).copyWith(color: Colors.black)),
-        
-        const SizedBox(height: 20),
-        Expanded(child: Container(margin: const EdgeInsets.symmetric(horizontal: 20), padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: Colors.black87, borderRadius: BorderRadius.circular(30)), child: Column(children: [Text("💀 EL CASTIGO", style: TextStyle(color: color, fontWeight: FontWeight.bold, letterSpacing: 2)), Text(loserTitle, style: const TextStyle(color: Colors.white54, fontSize: 12)), const Spacer(), const PunishmentRoulette(), const Spacer()]))),
+      backgroundColor: bgColor,
+      body: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            // TÍTULO DEL GANADOR
+            Text(
+              winnerText,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Bungee',
+                fontSize: 24,
+                color: Colors.white,
+                shadows: [const Shadow(blurRadius: 10, color: Colors.black45)],
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              loserTitle,
+              style: TextStyle(
+                fontFamily: 'YoungSerif',
+                fontSize: 14,
+                color: Colors.white70,
+              ),
+            ),
 
-        Padding(padding: const EdgeInsets.all(20), child: Row(children: [
-          Expanded(child: TextButton(onPressed: () { Provider.of<GameProvider>(context, listen: false).exitGame(); Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const CategoryScreen()), (r) => false); }, child: const Text("SALIR", style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold)))),
-          const SizedBox(width: 20),
-          Expanded(child: BouncyButton(text: "OTRA VEZ", color: Colors.black, onPressed: () { Provider.of<GameProvider>(context, listen: false).prepareNewMatch(); Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const CategoryScreen()), (r) => false); })),
-        ]))
-      ]))),
+            // --- LA RULETA ---
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 20,
+                ),
+                child: const PunishmentRoulette(),
+              ),
+            ),
+
+            // BOTONES INFERIORES
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                color: AppColors.bgBottom,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () {
+                        Provider.of<GameProvider>(
+                          context,
+                          listen: false,
+                        ).exitGame();
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CategoryScreen(),
+                          ),
+                          (r) => false,
+                        );
+                      },
+                      child: const Text(
+                        "SALIR",
+                        style: TextStyle(
+                          color: Colors.white54,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: BouncyButton(
+                      text: "JUGAR OTRA",
+                      color: AppColors.accent,
+                      onPressed: () {
+                        Provider.of<GameProvider>(
+                          context,
+                          listen: false,
+                        ).prepareNewMatch();
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CategoryScreen(),
+                          ),
+                          (r) => false,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -46,24 +138,225 @@ class PunishmentRoulette extends StatefulWidget {
 }
 
 class _PunishmentRouletteState extends State<PunishmentRoulette> {
-  String _currentText = "???"; bool _isSpinning = false; bool _hasSpun = false;
-  void _spin() async {
-    setState(() => _isSpinning = true);
-    final random = Random(); int ticks = 30 + random.nextInt(10); int delay = 50;
-    for (int i = 0; i < ticks; i++) {
-      await Future.delayed(Duration(milliseconds: delay)); if (!mounted) return;
-      setState(() { _currentText = GameConstants.punishments[random.nextInt(GameConstants.punishments.length)]; });
-      Vibration.vibrate(duration: 15);
-      if (i > ticks - 10) delay += 30; if (i > ticks - 5) delay += 60;
-    }
-    if (!mounted) return; Vibration.vibrate(pattern: [0, 50, 100, 500]); setState(() { _isSpinning = false; _hasSpun = true; });
+  // StreamController para manejar el giro de la ruleta
+  final StreamController<int> _selected = StreamController<int>();
+
+  bool _isSpinning = false;
+  int _lastIndex =
+      0; // Guardamos el índice ganador para mostrar el texto correcto
+
+  // Colores vibrantes alternados para las rebanadas
+  final List<Color> _colors = [
+    Colors.redAccent,
+    Colors.orangeAccent,
+    Colors.amber,
+    Colors.green,
+    Colors.blueAccent,
+    Colors.purpleAccent,
+    Colors.pinkAccent,
+  ];
+
+  @override
+  void dispose() {
+    _selected.close();
+    super.dispose();
   }
+
+  void _spin() {
+    if (_isSpinning) return;
+
+    setState(() => _isSpinning = true);
+    SoundManager.playClick(); // Sonido inicial
+
+    // Elegimos un castigo aleatorio
+    final index = Random().nextInt(GameConstants.punishments.length);
+    _lastIndex = index; // Lo guardamos para usarlo en el diálogo
+    _selected.add(index); // Le decimos a la ruleta que gire hasta ese índice
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (!_isSpinning && !_hasSpun) return BouncyButton(text: "GIRAR RULETA 😈", color: AppColors.accent, onPressed: _spin);
-    return Column(mainAxisSize: MainAxisSize.min, children: [
-      AnimatedContainer(duration: const Duration(milliseconds: 100), transform: Matrix4.identity()..scale(_isSpinning ? 1.05 : 1.0), padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(20), border: Border.all(color: _isSpinning ? AppColors.accent : Colors.white24, width: 2)), child: Text(_currentText, textAlign: TextAlign.center, style: GoogleFonts.fredoka(fontSize: 24, color: Colors.white))),
-      if (_hasSpun) ...[const SizedBox(height: 10), TextButton.icon(onPressed: _spin, icon: const Icon(Icons.refresh, color: Colors.white54), label: const Text("Girar de nuevo", style: TextStyle(color: Colors.white54)))]
-    ]);
+    return Column(
+      children: [
+        // ÁREA DE LA RULETA
+        Expanded(
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Borde exterior decorativo
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: FortuneWheel(
+                  selected: _selected.stream,
+                  animateFirst: false,
+                  // Física: 4 segundos de giro con desaceleración
+                  physics: CircularPanPhysics(
+                    duration: const Duration(seconds: 4),
+                    curve: Curves.decelerate,
+                  ),
+                  // Acción al terminar de girar
+                  onAnimationEnd: () {
+                    setState(() => _isSpinning = false);
+                    Vibration.vibrate(
+                      pattern: [0, 50, 100, 500],
+                    ); // Vibración de éxito
+                    _showResultDialog();
+                  },
+                  // Indicador (Triángulo superior)
+                  indicators: const <FortuneIndicator>[
+                    FortuneIndicator(
+                      alignment: Alignment.topCenter,
+                      child: TriangleIndicator(color: Colors.white),
+                    ),
+                  ],
+                  // Generamos los items (rebanadas) dinámicamente
+                  items: [
+                    for (int i = 0; i < GameConstants.punishments.length; i++)
+                      FortuneItem(
+                        style: FortuneItemStyle(
+                          color:
+                              _colors[i % _colors.length], // Alternar colores
+                          borderColor: Colors.white24,
+                          borderWidth: 2,
+                          textAlign: TextAlign.center,
+                          textStyle: const TextStyle(
+                            fontFamily: 'YoungSerif',
+                            fontSize: 14,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(25.0),
+                          child: Text(
+                            GameConstants.punishments[i],
+                            textAlign: TextAlign.center,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              // BOTÓN CENTRAL "?"
+              GestureDetector(
+                onTap: _spin,
+                child: Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.shade300, width: 4),
+                    boxShadow: [
+                      const BoxShadow(blurRadius: 10, color: Colors.black26),
+                    ],
+                  ),
+                  alignment: Alignment.center,
+                  child: _isSpinning
+                      ? const CircularProgressIndicator(
+                          color: AppColors.accent,
+                          strokeWidth: 3,
+                        )
+                      : const Text(
+                          "?",
+                          style: TextStyle(
+                            fontFamily: 'Bungee',
+                            fontSize: 35,
+                            color: Colors.black87,
+                          ),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        // Botón grande inferior (alternativo al centro)
+        if (!_isSpinning)
+          BouncyButton(
+            text: "GIRAR RULETA",
+            color: Colors.white,
+            onPressed: _spin,
+          )
+        else
+          const Text(
+            "¡SUERTE!",
+            style: TextStyle(
+              fontFamily: 'Bungee',
+              fontSize: 20,
+              color: Colors.white,
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _showResultDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.bgBottom,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white, width: 2),
+            boxShadow: [
+              const BoxShadow(
+                color: Colors.black45,
+                blurRadius: 20,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "🔥 TU CASTIGO 🔥",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Bungee',
+                  color: AppColors.error,
+                  fontSize: 24,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                GameConstants
+                    .punishments[_lastIndex], // Muestra el castigo seleccionado
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: 'YoungSerif',
+                  color: Colors.white,
+                  fontSize: 22,
+                ),
+              ),
+              const SizedBox(height: 30),
+              BouncyButton(
+                text: "ACEPTAR",
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
