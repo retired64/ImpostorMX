@@ -75,9 +75,24 @@ Tu apoyo ayuda a mantener el proyecto vivo y a seguir desarrollando nuevas funci
 Este proyecto está bajo [GPLv3](https://www.gnu.org/licenses/gpl-3.0.html)
 Esto significa:
 
-- puedes usar, modificar y distribuir libremente
-- Si distribuyes versiones modificadas, DEBES publicar el código fuente
-- No puedes crear versiones "premium cerradas"
+**Puedes:**
+- Usar el código libremente
+- Modificarlo como quieras
+- Distribuirlo (gratis o comercialmente)
+
+**DEBES:**
+- Publicar tu código fuente si distribuyes versiones modificadas
+- Mantener la licencia GPLv3
+- Dar crédito al proyecto original
+
+❌ **NO puedes:**
+- Crear versiones cerradas sin liberar el código
+- Cambiar la licencia a una no-GPL
+- Reclamar el código como tuyo sin reconocimiento
+
+**Copyright © 2026 Retired64**
+
+Para más detalles, consulta el archivo [LICENSE](./LICENSE).
 
 **Violaciones de licencia:** Si detectas uso indebido de este código, 
 repórtalo, abre un issue. La comunidad de código abierto
