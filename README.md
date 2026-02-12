@@ -95,8 +95,8 @@ Esto significa:
 Para más detalles, consulta el archivo [LICENSE](./LICENSE).
 
 **Violaciones de licencia:** Si detectas uso indebido de este código, 
-repórtalo, abre un issue. La comunidad de código abierto
-protege estos derechos activamente.
+repórtalo, abre un [issue](https://github.com/retired64/ImpostorMX/issues). La comunidad de código abierto
+protege estos derechos activamente Discutamos del tema en: [Discusiones de Github](https://github.com/retired64/ImpostorMX/discussions).
 
 ---
 
