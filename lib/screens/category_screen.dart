@@ -17,26 +17,39 @@ class CategoryScreen extends StatefulWidget {
 }
 
 class _CategoryScreenState extends State<CategoryScreen> {
-  // Estado para controlar si se muestra el tutorial
   bool _showTutorial = false;
 
-  // --- FUNCIÓN PARA ABRIR KO-FI ---
-  Future<void> _launchKoFi() async {
-    final Uri url = Uri.parse('https://ko-fi.com/impostormx');
+  // --- FUNCIONES DE NAVEGACIÓN Y URL ---
+  Future<void> _launchUrl(String urlString) async {
+    final Uri url = Uri.parse(urlString);
     try {
       if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-        throw Exception('No se pudo abrir $url');
+        debugPrint("No se pudo abrir $url");
       }
     } catch (e) {
       debugPrint("Error abriendo URL: $e");
     }
   }
 
-  // --- MOSTRAR MODAL DE AJUSTES Y DONACIÓN ---
+  Future<void> _launchKoFi() async =>
+      await _launchUrl('https://ko-fi.com/impostormx');
+  Future<void> _launchOfficialSite() async =>
+      await _launchUrl('https://impostormx.store/');
+
+  void _goToCreateCategory() {
+    Navigator.pop(context); // Cerrar el modal primero
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CreateCategoryScreen()),
+    );
+  }
+
+  // --- MOSTRAR EL MENÚ PRINCIPAL (SETTINGS) ---
   void _showSettingsModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (_) => Container(
         padding: const EdgeInsets.all(25),
         decoration: const BoxDecoration(
@@ -48,35 +61,62 @@ class _CategoryScreenState extends State<CategoryScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              "AJUSTES",
+              "MENÚ",
               style: TextStyle(
                 fontFamily: 'Bungee',
                 fontSize: 24,
                 color: Colors.white,
               ),
             ),
+            const SizedBox(height: 25),
 
-            // Eliminamos los switches de sonido/vibración y dejamos solo la separación
-            const SizedBox(height: 20),
-            const Divider(color: Colors.white24, height: 30),
+            // 1. BOTÓN CREAR CATEGORÍA (Estilo Ko-fi)
+            _MenuButton(
+              text: "Crear Categoría",
+              color: AppColors.accent, // Verde neón
+              textColor: Colors.black,
+              icon: Icons.add_circle_outline,
+              iconColor: Colors.black,
+              onTap: _goToCreateCategory,
+            ),
 
-            // --- SECCIÓN DE DONACIÓN ---
+            const SizedBox(height: 15),
+
+            // 2. BOTÓN SITIO OFICIAL (Estilo Ko-fi)
+            _MenuButton(
+              text: "Sitio Oficial",
+              color: const Color(0xFF800020), // Rojo Vino
+              textColor: Colors.white,
+              // Usamos tu imagen png aquí
+              customIcon: Image.asset(
+                'assets/images/impostor.png',
+                height: 24,
+                errorBuilder: (c, o, s) =>
+                    const Icon(Icons.public, color: Colors.white),
+              ),
+              onTap: _launchOfficialSite,
+            ),
+
+            const SizedBox(height: 25),
+            const Divider(color: Colors.white24),
+            const SizedBox(height: 10),
+
             const Text(
-              "¡Apoya el proyecto!",
+              "¡Apoya el desarrollo!",
               style: TextStyle(
                 fontFamily: 'YoungSerif',
                 color: Colors.white70,
                 fontSize: 14,
               ),
             ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 10),
 
-            // EL BOTÓN ANIMADO
+            // 3. BOTÓN KO-FI (Con animación especial)
             _AnimatedKoFiButton(onTap: _launchKoFi),
 
             const SizedBox(height: 20),
             const Text(
-              "v1.0 Open Source - by Miguel",
+              "v2.0 Open Source - by Retired64",
               style: TextStyle(color: Colors.white24, fontSize: 10),
             ),
           ],
@@ -90,7 +130,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
     final game = Provider.of<GameProvider>(context);
 
     return Scaffold(
-      // BOTÓN FLOTANTE DE AYUDA
       floatingActionButton: _showTutorial
           ? null
           : FloatingActionButton(
@@ -105,15 +144,16 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
       body: Stack(
         children: [
-          // 1. CONTENIDO PRINCIPAL
           GameBackground(
             child: Column(
               children: [
+                // --- CABECERA LIMPIA Y MEJORADA ---
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 20, 24, 10),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      // Títulos
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -136,51 +176,38 @@ class _CategoryScreenState extends State<CategoryScreen> {
                         ],
                       ),
 
-                      // --- BOTONES DE CABECERA (AÑADIR Y AJUSTES) ---
-                      Row(
-                        children: [
-                          // Botón Añadir (+)
-                          IconButton(
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const CreateCategoryScreen(),
+                      // ÚNICO BOTÓN: AJUSTES (Mejorado)
+                      GestureDetector(
+                        onTap: () => _showSettingsModal(context),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.accent,
+                              width: 2,
+                            ), // Borde verde neón
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.accent.withOpacity(0.2),
+                                blurRadius: 10,
+                                spreadRadius: 1,
                               ),
-                            ),
-                            icon: Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: const BoxDecoration(
-                                color: AppColors.surface,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.add,
-                                color: AppColors.accent,
-                              ),
-                            ),
+                            ],
                           ),
-
-                          // Botón Ajustes (Engranaje)
-                          IconButton(
-                            onPressed: () => _showSettingsModal(context),
-                            icon: Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.settings,
-                                color: Colors.white,
-                              ),
-                            ),
+                          child: const Icon(
+                            Icons.settings,
+                            color: Colors.white,
+                            size: 28,
                           ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
                 ),
 
+                // GRID DE CATEGORÍAS
                 Expanded(
                   child: GridView.builder(
                     padding: const EdgeInsets.all(20),
@@ -250,7 +277,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
             ),
           ),
 
-          // 2. CAPA OSCURA TUTORIAL
+          // TUTORIAL
           if (_showTutorial)
             GestureDetector(
               onTap: () => setState(() => _showTutorial = false),
@@ -261,7 +288,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
               ),
             ),
 
-          // 3. WIDGET TUTORIAL
           if (_showTutorial)
             Center(
               child: Padding(
@@ -323,7 +349,67 @@ class _CategoryScreenState extends State<CategoryScreen> {
   }
 }
 
-// --- CLASE DEL BOTÓN ANIMADO DE KO-FI ---
+// --- WIDGET GENÉRICO DE MENÚ (Estilo Ko-fi pero estático) ---
+class _MenuButton extends StatelessWidget {
+  final String text;
+  final Color color;
+  final Color textColor;
+  final IconData? icon;
+  final Widget? customIcon;
+  final Color? iconColor;
+  final VoidCallback onTap;
+
+  const _MenuButton({
+    required this.text,
+    required this.color,
+    required this.textColor,
+    this.icon,
+    this.customIcon,
+    this.iconColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 55,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: Colors.white.withOpacity(0.8), width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.5),
+              blurRadius: 15,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (customIcon != null) customIcon!,
+            if (icon != null)
+              Icon(icon, color: iconColor ?? textColor, size: 26),
+            const SizedBox(width: 10),
+            Text(
+              text,
+              style: TextStyle(
+                fontFamily: 'Bungee',
+                color: textColor,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- WIDGET KO-FI ANIMADO (El original con latido) ---
 class _AnimatedKoFiButton extends StatefulWidget {
   final VoidCallback onTap;
   const _AnimatedKoFiButton({required this.onTap});
@@ -339,7 +425,6 @@ class _AnimatedKoFiButtonState extends State<_AnimatedKoFiButton>
   @override
   void initState() {
     super.initState();
-    // Animación de latido (Pulse)
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -362,9 +447,9 @@ class _AnimatedKoFiButtonState extends State<_AnimatedKoFiButton>
       child: GestureDetector(
         onTap: widget.onTap,
         child: Container(
-          height: 55,
+          height: 60, // Un pelín más grande para resaltar
           decoration: BoxDecoration(
-            color: const Color(0xFF29ABE0), // Azul oficial de Ko-fi
+            color: const Color(0xFF29ABE0),
             borderRadius: BorderRadius.circular(30),
             border: Border.all(color: Colors.white, width: 2),
             boxShadow: [
@@ -378,12 +463,10 @@ class _AnimatedKoFiButtonState extends State<_AnimatedKoFiButton>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Imagen PNG del Logo
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                padding: const EdgeInsets.all(8.0),
                 child: Image.asset(
                   'assets/images/kofi.png',
-                  // Fallback si no encuentra la imagen
                   errorBuilder: (c, o, s) =>
                       const Icon(Icons.coffee, color: Colors.white),
                 ),
@@ -397,7 +480,7 @@ class _AnimatedKoFiButtonState extends State<_AnimatedKoFiButton>
                   fontSize: 16,
                 ),
               ),
-              const SizedBox(width: 15),
+              const SizedBox(width: 20),
             ],
           ),
         ),
@@ -406,7 +489,7 @@ class _AnimatedKoFiButtonState extends State<_AnimatedKoFiButton>
   }
 }
 
-// --- WIDGET INTERNO DEL TUTORIAL ---
+// --- WIDGET TUTORIAL (Sin cambios) ---
 class _TutorialCard extends StatefulWidget {
   final VoidCallback onClose;
   const _TutorialCard({required this.onClose});
@@ -424,7 +507,7 @@ class _TutorialCardState extends State<_TutorialCard> {
     {
       "title": "PASO 1",
       "text":
-          "Elige una categoría temática para jugar. ¡Puedes crear las tuyas propias con el botón '+' de arriba!",
+          "Elige una categoría temática para jugar. ¡Usa el botón de Ajustes (⚙️) para crear las tuyas propias!",
     },
     {
       "title": "PASO 2",
@@ -486,7 +569,6 @@ class _TutorialCardState extends State<_TutorialCard> {
   Widget build(BuildContext context) {
     final step = _steps[_currentStep];
     final isLast = _currentStep == _steps.length - 1;
-
     return Container(
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
