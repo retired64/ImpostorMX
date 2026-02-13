@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# Script simple de Git para subir cambios automáticamente
+# Uso: ./subir [mensaje] [--force]
+
+# Colores
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Mensaje por defecto
+COMMIT_MESSAGE="CAMBIOS APP"
+USE_FORCE=false
+
+# Procesar argumentos
+if [[ $# -eq 1 ]]; then
+    if [[ "$1" == "--force" ]]; then
+        USE_FORCE=true
+    else
+        COMMIT_MESSAGE="$1"
+    fi
+elif [[ $# -eq 2 ]]; then
+    COMMIT_MESSAGE="$1"
+    if [[ "$2" == "--force" ]]; then
+        USE_FORCE=true
+    fi
+fi
+
+echo -e "${YELLOW}Subiendo cambios a GitHub...${NC}"
+echo "Mensaje: $COMMIT_MESSAGE"
+
+# Verificar si estamos en un repo git
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    echo -e "${RED}Error: No estás en un repositorio Git${NC}"
+    exit 1
+fi
+
+# Git add
+echo -e "${YELLOW}Añadiendo archivos...${NC}"
+git add .
+
+# Git commit
+echo -e "${YELLOW}Creando commit...${NC}"
+git commit -m "$COMMIT_MESSAGE"
+
+# Asegurar rama main
+echo -e "${YELLOW}Configurando rama main...${NC}"
+git branch -M main
+
+# Git push
+echo -e "${YELLOW}Subiendo a GitHub...${NC}"
+if [[ "$USE_FORCE" == true ]]; then
+    echo -e "${YELLOW}Usando push forzado...${NC}"
+    git push --force origin main
+else
+    # Intentar push normal primero
+    if ! git push origin main 2>/dev/null; then
+        echo -e "${YELLOW}Push normal falló, usando push forzado...${NC}"
+        git push --force origin main
+    fi
+fi
+
+if [[ $? -eq 0 ]]; then
+    echo -e "${GREEN}✅ Cambios subidos exitosamente!${NC}"
+else
+    echo -e "${RED}❌ Error al subir cambios${NC}"
+    exit 1
+fi

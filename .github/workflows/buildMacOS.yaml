@@ -1,0 +1,52 @@
+name: Build ImpostorMX macOS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    name: Build macOS Application
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Enable macOS desktop support
+        run: flutter config --enable-macos-desktop
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build macOS Release
+        run: flutter build macos --release
+
+      - name: Package macOS Application
+        run: |
+          BUILD_PATH="build/macos/Build/Products/Release"
+          APP_NAME="impostormx-macos-v1.0.0"
+          
+          # Crear carpeta para empaquetado
+          mkdir -p "$APP_NAME"
+          
+          # Copiar la aplicación .app
+          cp -R "$BUILD_PATH/impostormx.app" "$APP_NAME/"
+          
+          # Mostrar información
+          echo "✓ macOS application packaged successfully"
+          ls -la "$APP_NAME"
+          du -sh "$APP_NAME"
+        shell: bash
+
+      - name: Upload macOS Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: impostormx-macos-release
+          path: impostormx-macos-v1.0.0/
+          retention-days: 30
