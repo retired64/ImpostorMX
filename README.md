@@ -50,6 +50,41 @@ Para instalar desde GitHub, simplemente descarga el archivo .APK de la última r
 - **Dart:** Lenguaje de programación eficiente y moderno
 - **Arquitectura modular:** Código limpio y organizado para facilitar el mantenimiento
 
+# Instalación iOS
+
+## Descarga
+
+Descarga el archivo `.ipa` desde la sección [Releases](https://github.com/Retired64/impostorMX/releases).
+
+##  Aplicación sin firmar
+
+El archivo IPA no está firmado con un certificado de Apple Developer. Para instalarlo necesitas usar herramientas de sideloading:
+
+### Método 1: Sideloadly (Recomendado)
+1. Descarga [Sideloadly](https://sideloadly.io/)
+2. Conecta tu iPhone por USB
+3. Arrastra el archivo `.ipa` a Sideloadly
+4. Ingresa tu Apple ID y haz clic en "Start"
+5. En tu iPhone: Ajustes → General → VPN y gestión de dispositivos → Confiar
+
+### Método 2: AltStore
+1. Instala [AltStore](https://altstore.io/) en tu PC y iPhone
+2. Abre AltStore en tu iPhone
+3. Toca "+" y selecciona el archivo `.ipa`
+
+**Nota:** Las apps instaladas así caducan cada 7 días y necesitan renovarse. AltStore puede hacerlo automáticamente por WiFi.
+
+**[Guía detallada de instalación iOS →](INSTALACION_iOS.md)**
+
+---
+
+## Requisitos
+- Apple ID gratuito (no necesitas pagar)
+- iOS 12.2 o superior
+- Cable USB
+- Windows 10+ o macOS 10.14.4+
+
+
 ## Contribuir al Proyecto
 
 ¡Las contribuciones son más que bienvenidas! Si quieres mejorar Impostor MX, sigue estos pasos:
