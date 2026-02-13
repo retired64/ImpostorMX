@@ -17,7 +17,7 @@ Este proyecto nació de una simple pregunta: ¿Por qué pagar suscripciones mens
 - **Totalmente Offline:** Perfecta para viajes, reuniones sin internet o fiestas sin preocuparte por los datos.
 - **Código Abierto:** Transparencia total. Puedes revisar cada línea de código y modificarlo a tu gusto.
 - **Personalizable:** Crea tus propias categorías temáticas y ajusta las reglas del juego.
-- **uleta de Castigos:** Una mecánica exclusiva que añade más emoción al final de cada partida.
+- **Ruleta de Castigos:** Una mecánica exclusiva que añade más emoción al final de cada partida.
 
 ## Cómo Se Juega
 
