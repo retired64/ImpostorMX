@@ -49,7 +49,8 @@ Para instalar desde GitHub, simplemente descarga el archivo .APK de la última r
 - **Flutter:** Framework multiplataforma para una experiencia fluida
 - **Dart:** Lenguaje de programación eficiente y moderno
 - **Arquitectura modular:** Código limpio y organizado para facilitar el mantenimiento
-# Compilar sin Configuración Local (GitHub Actions)
+
+# Compilar con GitHub Actions
 
 ¿Quieres compilar ImpostorMX sin instalar nada en tu computadora? ¡Usa GitHub Actions!
 
@@ -84,16 +85,16 @@ Si solo quieres probar el juego rápido:
 ## Seguridad
 
 Esta app es 100% segura:
-- ✅ **Sin internet** - Completamente offline
-- ✅ **Sin permisos invasivos** - Solo vibración
-- ✅ **Código abierto** - Revisa tú mismo el código
-- ✅ **Sin recolección de datos** - Cero tracking
+- **Sin internet** - Completamente offline
+- **Sin permisos invasivos** - Solo vibración
+- **Código abierto** - Revisa tú mismo el código
+- **Sin recolección de datos** - Cero tracking
 
 Verifica los permisos: [AndroidManifest.xml](https://github.com/retired64/ImpostorMX/blob/main/android/app/src/main/AndroidManifest.xml)
 
 ---
 
-**[Ver Guía Detallada de Compilación](COMPILAR_CON_GITHUB_ACTIONS.md)** con capturas de pantalla y solución de problemas.
+**[Ver Guía Detallada de Compilación](COMPILAR_CON_GITHUB_ACTIONS.md)**
 
 # Instalación iOS
 
