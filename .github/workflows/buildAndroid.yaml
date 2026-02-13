@@ -28,6 +28,12 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      # AGREGAR ESTO
+      - name: Setup Android properties
+        run: |
+          echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
+          echo "sdk.dir=$ANDROID_SDK_ROOT" >> android/local.properties
+
       - name: Build Android APK
         run: flutter build apk --release
 
@@ -39,19 +45,12 @@ jobs:
           BUILD_PATH="build/app/outputs"
           APP_NAME="impostormx-android-v1.0.0"
           
-          # Crear carpeta para empaquetado
           mkdir -p "$APP_NAME"
-          
-          # Copiar APK
           cp "$BUILD_PATH/flutter-apk/app-release.apk" "$APP_NAME/impostormx-v1.0.0.apk"
-          
-          # Copiar AAB (para Google Play)
           cp "$BUILD_PATH/bundle/release/app-release.aab" "$APP_NAME/impostormx-v1.0.0.aab"
           
-          # Mostrar información
           echo "✓ Android builds packaged successfully"
           ls -lh "$APP_NAME"
-        shell: bash
 
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
