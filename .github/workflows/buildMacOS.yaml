@@ -39,7 +39,7 @@ jobs:
           cp -R "$BUILD_PATH/impostormx.app" "$APP_NAME/"
           
           # Mostrar información
-          echo "✓ macOS application packaged successfully"
+          echo "macOS application packaged successfully"
           ls -la "$APP_NAME"
           du -sh "$APP_NAME"
         shell: bash

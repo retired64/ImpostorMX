@@ -44,7 +44,7 @@ jobs:
           cp -R "$BUILD_PATH"/* "$APP_NAME/"
           
           # Mostrar información
-          echo "✓ Linux application packaged successfully"
+          echo "Linux application packaged successfully"
           ls -la "$APP_NAME"
           du -sh "$APP_NAME"
         shell: bash

@@ -39,7 +39,7 @@ jobs:
           Copy-Item -Path "$buildPath\*" -Destination $appName -Recurse
           
           # Mostrar información
-          Write-Host "✓ Windows application packaged successfully"
+          Write-Host "Windows application packaged successfully"
           Get-ChildItem $appName
         shell: powershell
 
