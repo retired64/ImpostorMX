@@ -1,85 +1,69 @@
-name: Build ImpostorMX Android
+name: Build Android APK
 
 on:
   workflow_dispatch:
 
 jobs:
-  build-android:
-    name: Build Android Application
+  build:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
-      - name: Setup Flutter
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: '3.38.7'
+          channel: 'stable'
           cache: true
+
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/keystore.jks
+
+      - name: Create key.properties
+        run: |
+          cat > android/key.properties << EOF
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=keystore.jks
+          EOF
 
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Get version from pubspec.yaml
-        id: version
-        run: |
-          VERSION=$(grep "^version:" pubspec.yaml | sed 's/version: *//' | tr -d '\r')
-          VERSION_NAME=$(echo $VERSION | cut -d'+' -f1)
-          VERSION_CODE=$(echo $VERSION | cut -d'+' -f2)
-          
-          echo "📦 Version from pubspec.yaml: $VERSION"
-          echo "   • Version Name: $VERSION_NAME"
-          echo "   • Version Code: $VERSION_CODE"
-          
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_OUTPUT
-          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_OUTPUT
+      - name: Run tests
+        run: flutter test
+        continue-on-error: true
 
-      - name: Create local.properties
-        run: |
-          cat > android/local.properties << EOF
-          flutter.sdk=$FLUTTER_ROOT
-          sdk.dir=$ANDROID_SDK_ROOT
-          flutter.versionCode=${{ steps.version.outputs.VERSION_CODE }}
-          flutter.versionName=${{ steps.version.outputs.VERSION_NAME }}
-          EOF
-          echo "✓ Created local.properties with version ${{ steps.version.outputs.VERSION_NAME }}"
-
-      - name: Build Android APK
+      - name: Build APK
         run: flutter build apk --release
 
-      - name: Build Android App Bundle (AAB)
+      - name: Build App Bundle
         run: flutter build appbundle --release
 
-      - name: Package Android Builds
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: impostormx-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Upload App Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: impostormx-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+
+      - name: Clean up keystore
+        if: always()
         run: |
-          BUILD_PATH="build/app/outputs"
-          APP_NAME="impostormx-android-v${{ steps.version.outputs.VERSION_NAME }}"
-          
-          mkdir -p "$APP_NAME"
-          cp "$BUILD_PATH/flutter-apk/app-release.apk" "$APP_NAME/impostormx-v${{ steps.version.outputs.VERSION_NAME }}.apk"
-          cp "$BUILD_PATH/bundle/release/app-release.aab" "$APP_NAME/impostormx-v${{ steps.version.outputs.VERSION_NAME }}.aab"
-          
-          echo "✓ Android builds packaged successfully"
-          ls -lh "$APP_NAME"
-
-      - name: Upload Android APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: impostormx-android-apk-v${{ steps.version.outputs.VERSION_NAME }}
-          path: impostormx-android-v${{ steps.version.outputs.VERSION_NAME }}/impostormx-v${{ steps.version.outputs.VERSION_NAME }}.apk
-          retention-days: 30
-
-      - name: Upload Android AAB
-        uses: actions/upload-artifact@v4
-        with:
-          name: impostormx-android-aab-v${{ steps.version.outputs.VERSION_NAME }}
-          path: impostormx-android-v${{ steps.version.outputs.VERSION_NAME }}/impostormx-v${{ steps.version.outputs.VERSION_NAME }}.aab
-          retention-days: 30
+          rm -f android/app/keystore.jks
+          rm -f android/key.properties
