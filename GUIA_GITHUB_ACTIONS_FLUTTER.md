@@ -4,13 +4,13 @@ Esta guía te enseñará paso a paso cómo configurar GitHub Actions para compil
 
 ## Tabla de contenidos
 
-1. [Prerequisitos](#prerequisitos)
-2. [Preparar tu keystore](#preparar-tu-keystore)
-3. [Configurar GitHub Secrets](#configurar-github-secrets)
-4. [Crear el workflow](#crear-el-workflow)
-5. [Verificar la compilación](#verificar-la-compilación)
-6. [Solución de problemas](#solución-de-problemas)
-7. [Recursos adicionales](#recursos-adicionales)
+1. [Prerequisitos](https://github.com/retired64/ImpostorMX/blob/main/GUIA_GITHUB_ACTIONS_FLUTTER.md#prerequisitos)
+2. [Preparar tu keystore](https://github.com/retired64/ImpostorMX/blob/main/GUIA_GITHUB_ACTIONS_FLUTTER.md#1-preparar-tu-keystore)
+3. [Configurar GitHub Secrets](https://github.com/retired64/ImpostorMX/blob/main/GUIA_GITHUB_ACTIONS_FLUTTER.md#2-configurar-github-secrets)
+4. [Crear el workflow](https://github.com/retired64/ImpostorMX/blob/main/GUIA_GITHUB_ACTIONS_FLUTTER.md#3-crear-el-workflow)
+5. [Verificar la compilación](https://github.com/retired64/ImpostorMX/blob/main/GUIA_GITHUB_ACTIONS_FLUTTER.md#4-verificar-tu-configuraci%C3%B3n-de-buildgradlekts)
+6. [Solución de problemas](https://github.com/retired64/ImpostorMX/blob/main/GUIA_GITHUB_ACTIONS_FLUTTER.md#7-soluci%C3%B3n-de-problemas)
+7. [Recursos adicionales](https://github.com/retired64/ImpostorMX/blob/main/GUIA_GITHUB_ACTIONS_FLUTTER.md#8-recursos-adicionales)
 
 ---
 
