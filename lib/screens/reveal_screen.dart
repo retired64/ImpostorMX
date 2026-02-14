@@ -17,7 +17,6 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:vibration/vibration.dart';
 import '../providers/game_provider.dart';
@@ -53,27 +52,122 @@ class _RevealScreenState extends State<RevealScreen> {
               Text("para ver tu carta secreta", style: AppTheme.body(14)),
               const Spacer(),
               GestureDetector(
-                onTapDown: (_) { setState(() => _isPeeking = true); Vibration.vibrate(pattern: GameConstants.hapticPeek); },
+                onTapDown: (_) {
+                  setState(() => _isPeeking = true);
+                  Vibration.vibrate(pattern: GameConstants.hapticPeek);
+                },
                 onTapUp: (_) => setState(() => _isPeeking = false),
                 onTapCancel: () => setState(() => _isPeeking = false),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150), width: 300, height: 400,
-                  decoration: BoxDecoration(color: _isPeeking ? AppColors.bgBottom : AppColors.cardHidden, borderRadius: BorderRadius.circular(30), border: Border.all(color: _isPeeking ? roleColor : Colors.white24, width: _isPeeking ? 4 : 2), boxShadow: [BoxShadow(color: _isPeeking ? roleColor.withOpacity(0.4) : Colors.black45, blurRadius: 30, spreadRadius: 5)]),
-                  child: _isPeeking ? Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(isImpostor ? Icons.fingerprint : Icons.search, size: 80, color: roleColor), const SizedBox(height: 20), Text(isImpostor ? "IMPOSTOR" : "CIVIL", style: GoogleFonts.fredoka(fontSize: 36, color: roleColor)), const SizedBox(height: 30), if (!isImpostor) Text(game.secretWord.toUpperCase(), style: GoogleFonts.fredoka(fontSize: 40, color: Colors.white)), if (isImpostor) Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: Text("Engaña a todos", textAlign: TextAlign.center, style: AppTheme.body(18)))]) : Column(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.lock, size: 60, color: Colors.white24), const SizedBox(height: 20), Text("TOP SECRET", style: GoogleFonts.blackOpsOne(fontSize: 30, color: Colors.white24))]),
+                  duration: const Duration(milliseconds: 150),
+                  width: 300,
+                  height: 400,
+                  decoration: BoxDecoration(
+                    color: _isPeeking
+                        ? AppColors.bgBottom
+                        : AppColors.cardHidden,
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(
+                      color: _isPeeking ? roleColor : Colors.white24,
+                      width: _isPeeking ? 4 : 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _isPeeking
+                            ? roleColor.withOpacity(0.4)
+                            : Colors.black45,
+                        blurRadius: 30,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: _isPeeking
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              isImpostor ? Icons.fingerprint : Icons.search,
+                              size: 80,
+                              color: roleColor,
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              isImpostor ? "IMPOSTOR" : "CIVIL",
+                              style: TextStyle(
+                                fontFamily: 'YoungSerif',
+                                fontSize: 36,
+                                color: roleColor,
+                              ),
+                            ),
+                            const SizedBox(height: 30),
+                            if (!isImpostor)
+                              Text(
+                                game.secretWord.toUpperCase(),
+                                style: const TextStyle(
+                                  fontFamily: 'YoungSerif',
+                                  fontSize: 40,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            if (isImpostor)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                ),
+                                child: Text(
+                                  "Engaña a todos",
+                                  textAlign: TextAlign.center,
+                                  style: AppTheme.body(18),
+                                ),
+                              ),
+                          ],
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.lock,
+                              size: 60,
+                              color: Colors.white24,
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              "TOP SECRET",
+                              style: const TextStyle(
+                                fontFamily: 'YoungSerif',
+                                fontSize: 30,
+                                color: Colors.white24,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
               ),
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.all(30),
-                child: BouncyButton(text: "CONTINUAR", color: Colors.white, onPressed: () {
-                  final active = game.players.where((p) => p.isLocked).toList();
-                  if (game.currentTurnIndex < active.length - 1) {
-                    game.nextTurn(); Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
-                  } else {
-                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const TimerScreen()));
-                  }
-                }),
-              )
+                child: BouncyButton(
+                  text: "CONTINUAR",
+                  color: Colors.white,
+                  onPressed: () {
+                    final active = game.players
+                        .where((p) => p.isLocked)
+                        .toList();
+                    if (game.currentTurnIndex < active.length - 1) {
+                      game.nextTurn();
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      );
+                    } else {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const TimerScreen()),
+                      );
+                    }
+                  },
+                ),
+              ),
             ],
           ),
         ),

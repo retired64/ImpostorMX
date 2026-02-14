@@ -18,7 +18,6 @@
 
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/game_provider.dart';
 import '../widgets/common.dart';
@@ -139,7 +138,8 @@ class _TimerScreenState extends State<TimerScreen> {
                   ),
                   Text(
                     "${(g.remainingSeconds / 60).floor()}:${(g.remainingSeconds % 60).toString().padLeft(2, '0')}",
-                    style: GoogleFonts.robotoMono(
+                    style: const TextStyle(
+                      fontFamily: 'YoungSerif',
                       fontSize: 60,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
