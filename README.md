@@ -182,3 +182,4 @@ protege estos derechos activamente Discutamos del tema en: [Discusiones de Githu
 ---
 
 **Hecho con ❤️ para la comunidad del gaming libre.**
+
