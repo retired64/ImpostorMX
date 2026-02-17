@@ -1,0 +1,6 @@
+Version v2.1.0 - Multi-Language Update
+- Full support for Spanish, English, and Portuguese
+- Automatic language detection on first launch
+- Real-time language selector in settings menu
+- Sound effects and audio now play in selected language
+- Category words and roulette punishments adapt to active language

@@ -20,7 +20,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'config/theme.dart';
+
+// --- PROVIDERS ---
 import 'providers/game_provider.dart';
+import 'providers/language_provider.dart'; // <-- NUEVO IMPORT
+
+// --- SCREENS ---
 import 'screens/category_screen.dart';
 import 'screens/player_setup_screen.dart';
 import 'screens/config_screen.dart';
@@ -28,7 +33,6 @@ import 'screens/login_screen.dart';
 import 'screens/reveal_screen.dart';
 import 'screens/timer_screen.dart';
 import 'screens/voting_screen.dart';
-// import 'screens/result_screen.dart'; // No necesitamos importarlo aquí si no está en las rutas estáticas
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,7 +43,12 @@ void main() {
 
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => GameProvider())],
+      providers: [
+        // Instanciamos el manejador de idiomas primero
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
+        // Instanciamos el manejador del juego
+        ChangeNotifierProvider(create: (_) => GameProvider()),
+      ],
       child: const ImpostorApp(),
     ),
   );
@@ -63,8 +72,6 @@ class ImpostorApp extends StatelessWidget {
         '/reveal': (context) => const RevealScreen(),
         '/timer': (context) => const TimerScreen(),
         '/voting': (context) => const VotingScreen(),
-        // La ruta '/result' se eliminó porque requiere argumentos dinámicos (el jugador votado).
-        // Se llama manualmente desde VotingScreen.
       },
     );
   }

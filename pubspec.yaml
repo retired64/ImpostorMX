@@ -3,7 +3,7 @@ description: "Impostor MX es la versión digital del clásico juego de fiesta qu
 
 publish_to: 'none'
 
-version: 2.0.0+2
+version: 2.1.0+3
 
 environment:
   sdk: ^3.10.7
@@ -40,6 +40,9 @@ flutter:
   assets:
     - assets/sounds/
     - assets/images/
+    - assets/sounds/es/
+    - assets/sounds/en/
+    - assets/sounds/pt/
 
   fonts:
     - family: Bungee

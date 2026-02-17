@@ -26,6 +26,7 @@ import 'package:vibration/vibration.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../config/constants.dart';
 import '../words.dart';
+import '../lang/es.dart'; // Importado para el fallback seguro inicial
 
 class Player {
   String id;
@@ -45,13 +46,19 @@ class Player {
 enum GameStatus { setup, playing, finished }
 
 class GameProvider with ChangeNotifier {
+  // --- NUEVO: Variable para el idioma actual ---
+  String currentLang = 'es';
+
   // Lógica de Categorías y Jugadores
   List<String> punishments = []; // Lista dinámica de castigos
   List<Category> _customCategories = [];
+
+  // --- MODIFICADO: Ahora solicita las categorías según el idioma actual ---
   List<Category> get allCategories => [
-    ...GAME_CATEGORIES,
+    ...getGameCategories(currentLang),
     ..._customCategories,
   ];
+
   List<Player> players = [];
   Category? selectedCategory;
   String secretWord = '';
@@ -68,12 +75,12 @@ class GameProvider with ChangeNotifier {
   GameStatus status = GameStatus.setup;
 
   late AudioPlayer _audioPlayer; // Alarma final
-  final AudioPlayer _effectPlayer = AudioPlayer(); // NUEVO: Efecto Tic-Tac
+  final AudioPlayer _effectPlayer = AudioPlayer(); // Efecto Tic-Tac
   bool _isPlayingAudio = false;
 
   GameProvider() {
     _audioPlayer = AudioPlayer();
-    // Pre-cargamos el sonido del tic-tac para evitar retrasos
+    // Pre-cargamos el sonido del tic-tac para evitar retrasos (este no cambia por idioma)
     _effectPlayer.setSource(AssetSource('sounds/tictac.mp3'));
 
     _initGame();
@@ -136,7 +143,8 @@ class GameProvider with ChangeNotifier {
     if (stored != null && stored.isNotEmpty) {
       punishments = stored;
     } else {
-      punishments = List.from(GameConstants.punishments);
+      // Usamos el español como respaldo si la app es nueva y aún no detecta el idioma
+      punishments = List.from(defaultPunishmentsEs);
     }
     notifyListeners();
   }
@@ -155,8 +163,9 @@ class GameProvider with ChangeNotifier {
     }
   }
 
-  Future<void> resetPunishments() async {
-    punishments = List.from(GameConstants.punishments);
+  // --- MODIFICADO: Recibe los castigos según el idioma seleccionado ---
+  Future<void> resetPunishments(List<String> defaultLangPunishments) async {
+    punishments = List.from(defaultLangPunishments);
     await _savePunishments();
     notifyListeners();
   }
@@ -167,21 +176,22 @@ class GameProvider with ChangeNotifier {
   }
 
   // --- HARDWARE (AUDIO & VIBRACIÓN) ---
+  // --- MODIFICADO: El audio se reproduce desde la carpeta del idioma actual ---
   Future<void> playAlarm() async {
     try {
       if (_isPlayingAudio) await _audioPlayer.stop();
       _isPlayingAudio = true;
-      await _audioPlayer.play(AssetSource('sounds/alarm.mp3'));
+      await _audioPlayer.play(AssetSource('sounds/$currentLang/alarm.mp3'));
     } catch (_) {
       _isPlayingAudio = false;
     }
   }
 
-  // NUEVO: Función para reproducir el tic-tac corto
   Future<void> _playTick() async {
     try {
-      if (_effectPlayer.state == PlayerState.playing)
+      if (_effectPlayer.state == PlayerState.playing) {
         await _effectPlayer.stop();
+      }
       await _effectPlayer.play(AssetSource('sounds/tictac.mp3'), volume: 1.0);
     } catch (_) {}
   }
@@ -189,7 +199,7 @@ class GameProvider with ChangeNotifier {
   void stopAudio() {
     try {
       _audioPlayer.stop();
-      _effectPlayer.stop(); // También detenemos el efecto si se cancela
+      _effectPlayer.stop();
     } catch (_) {}
     _isPlayingAudio = false;
   }
@@ -336,7 +346,7 @@ class GameProvider with ChangeNotifier {
     return active[currentTurnIndex];
   }
 
-  // --- TIMER (MODIFICADO CON TIC-TAC) ---
+  // --- TIMER (CON TIC-TAC) ---
   void startTimer() {
     WakelockPlus.enable();
     isTimerRunning = true;
@@ -346,22 +356,15 @@ class GameProvider with ChangeNotifier {
       if (remainingSeconds > 0) {
         remainingSeconds--;
 
-        // >>> NUEVA LÓGICA DE TENSIÓN <<<
         if (remainingSeconds <= 10 && remainingSeconds > 0) {
-          // 1. Reproducir sonido Tic-Tac
           _playTick();
 
-          // 2. Vibración Progresiva
           if (remainingSeconds <= 5) {
-            // Últimos 5 seg: Vibración doble (más estrés)
             Vibration.vibrate(pattern: [0, 50, 50, 50]);
           } else {
-            // Del 10 al 6: Vibración simple (tic)
             Vibration.vibrate(duration: 50);
           }
         }
-        // >>> FIN NUEVA LÓGICA <<<
-
         notifyListeners();
       } else {
         stopTimer(finished: true);
@@ -446,7 +449,7 @@ class GameProvider with ChangeNotifier {
   void dispose() {
     _timer?.cancel();
     _audioPlayer.dispose();
-    _effectPlayer.dispose(); // Limpiamos el nuevo reproductor
+    _effectPlayer.dispose();
     super.dispose();
   }
 }

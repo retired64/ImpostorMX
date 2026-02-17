@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:provider/provider.dart';
 import '../providers/game_provider.dart';
+import '../providers/language_provider.dart'; // <--- IMPORTAMOS EL LANGUAGE PROVIDER
 import '../widgets/common.dart';
 import '../widgets/inputs.dart';
 import '../config/theme.dart';
@@ -31,6 +32,9 @@ class PlayerSetupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final game = Provider.of<GameProvider>(context);
+    final lang = Provider.of<LanguageProvider>(
+      context,
+    ); // <--- INSTANCIAMOS EL IDIOMA
     final count = game.players.where((p) => p.isLocked).length;
 
     return Scaffold(
@@ -38,7 +42,8 @@ class PlayerSetupScreen extends StatelessWidget {
         child: Column(
           children: [
             GameNavBar(
-              title: "Jugadores ($count)",
+              // Texto dinámico con la variable del conteo inyectada
+              title: "${lang.translate('players_title')} ($count)",
               onBack: () => Navigator.pop(context),
               action: IconButton(
                 icon: const Icon(Icons.person_add, color: AppColors.accent),
@@ -70,7 +75,9 @@ class PlayerSetupScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(20),
               child: BouncyButton(
-                text: "CONTINUAR",
+                text: lang.translate(
+                  'players_btn_continue',
+                ), // <--- TEXTO DINÁMICO
                 onPressed: count >= GameConstants.minPlayers
                     ? () => Navigator.pushNamed(context, '/config')
                     : null,
@@ -90,6 +97,10 @@ class _PlayerRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final game = Provider.of<GameProvider>(context, listen: false);
+    final lang = Provider.of<LanguageProvider>(
+      context,
+    ); // <--- INSTANCIAMOS EL IDIOMA AQUÍ TAMBIÉN
+
     if (player.isLocked) {
       return GameCard(
         onTap: () => game.unlockPlayer(player.id),
@@ -124,7 +135,7 @@ class _PlayerRow extends StatelessWidget {
           Expanded(
             child: MinimalInput(
               controller: TextEditingController(text: player.name),
-              hint: "Nombre",
+              hint: lang.translate('players_input_name'), // <--- TEXTO DINÁMICO
               onChanged: (v) => game.updatePlayer(player.id, name: v),
             ),
           ),
@@ -133,7 +144,7 @@ class _PlayerRow extends StatelessWidget {
             width: 80,
             child: MinimalInput(
               controller: TextEditingController(text: player.pin),
-              hint: "PIN",
+              hint: lang.translate('players_input_pin'), // <--- TEXTO DINÁMICO
               isPassword: true,
               keyboard: TextInputType.number,
               onChanged: (v) => game.updatePlayer(player.id, pin: v),

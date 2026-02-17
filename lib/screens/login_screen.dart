@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vibration/vibration.dart';
 import '../providers/game_provider.dart';
+import '../providers/language_provider.dart'; // <--- IMPORTAMOS EL LANGUAGE PROVIDER
 import '../widgets/common.dart';
 import '../config/theme.dart';
 import '../config/constants.dart';
@@ -34,10 +35,13 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   String pin = "";
+
   void _tap(String val, Player p) {
     setState(() {
       if (pin.length < 4) pin += val;
+
       if (pin.length == 4) {
+        // Validar PIN
         if (pin == p.pin) {
           Vibration.vibrate(pattern: GameConstants.hapticSuccess);
           Navigator.pushReplacement(
@@ -46,7 +50,11 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         } else {
           Vibration.vibrate(pattern: GameConstants.hapticError);
-          pin = "";
+          // Pequeña animación visual o delay podría ir aquí,
+          // pero por ahora solo limpiamos
+          Future.delayed(const Duration(milliseconds: 200), () {
+            if (mounted) setState(() => pin = "");
+          });
         }
       }
     });
@@ -55,6 +63,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final p = Provider.of<GameProvider>(context).getCurrentPlayer();
+    final lang = Provider.of<LanguageProvider>(
+      context,
+    ); // <--- OBTENEMOS EL PROVIDER
+
     return Scaffold(
       body: GameBackground(
         child: Column(
@@ -62,10 +74,15 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             const Icon(Icons.lock_outline, color: Colors.white54, size: 40),
             const SizedBox(height: 20),
-            Text("Turno de", style: AppTheme.body(16)),
+
+            // Texto traducido: "Turno de"
+            Text(lang.translate('login_turn_of'), style: AppTheme.body(16)),
+
             const SizedBox(height: 5),
             Text(p.name, style: AppTheme.heading(32)),
             const SizedBox(height: 40),
+
+            // Indicadores de PIN (puntos)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
@@ -82,6 +99,8 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             const SizedBox(height: 50),
+
+            // Teclado numérico
             _Numpad(
               onTap: (v) => _tap(v, p),
               onBack: () => setState(
@@ -101,6 +120,7 @@ class _Numpad extends StatelessWidget {
   final Function(String) onTap;
   final VoidCallback onBack;
   const _Numpad({required this.onTap, required this.onBack});
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -111,7 +131,7 @@ class _Numpad extends StatelessWidget {
         alignment: WrapAlignment.center,
         children: [
           ...List.generate(9, (i) => _NumKey("${i + 1}", onTap)),
-          const SizedBox(width: 80),
+          const SizedBox(width: 80), // Espacio para centrar el 0
           _NumKey("0", onTap),
           GestureDetector(
             onTap: onBack,
@@ -135,6 +155,7 @@ class _NumKey extends StatelessWidget {
   final String val;
   final Function(String) onTap;
   const _NumKey(this.val, this.onTap);
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(

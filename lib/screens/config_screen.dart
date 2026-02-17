@@ -19,11 +19,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/game_provider.dart';
+import '../providers/language_provider.dart'; // <--- IMPORTANTE: Importamos el LanguageProvider
 import '../widgets/common.dart';
 import '../widgets/inputs.dart';
 import '../config/theme.dart';
 import 'login_screen.dart';
-import 'punishments_screen.dart'; // <--- IMPORTANTE: Importamos la nueva pantalla
+import 'punishments_screen.dart';
 
 class ConfigScreen extends StatelessWidget {
   const ConfigScreen({super.key});
@@ -31,12 +32,16 @@ class ConfigScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final game = Provider.of<GameProvider>(context);
+    final lang = Provider.of<LanguageProvider>(
+      context,
+    ); // <--- Instanciamos el provider de idioma
+
     return Scaffold(
       body: GameBackground(
         child: Column(
           children: [
             GameNavBar(
-              title: "Configuración",
+              title: lang.translate('config_title'), // <--- Texto dinámico
               onBack: () => Navigator.pop(context),
             ),
             Expanded(
@@ -46,13 +51,13 @@ class ConfigScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _Counter(
-                      "Impostores",
+                      lang.translate('config_impostors'), // <--- Texto dinámico
                       "${game.impostorCount}",
                       game.adjustImpostors,
                     ),
                     const SizedBox(height: 20),
                     _Counter(
-                      "Tiempo",
+                      lang.translate('config_time'), // <--- Texto dinámico
                       "${(game.initialTimeSeconds / 60).floor()}:${(game.initialTimeSeconds % 60).toString().padLeft(2, '0')}",
                       (d) => game.adjustTime(d * 30),
                     ),
@@ -68,16 +73,19 @@ class ConfigScreen extends StatelessWidget {
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
+                        children: [
+                          // Quitamos el const de la lista para permitir datos dinámicos
                           Text(
-                            "Editar Castigos",
-                            style: TextStyle(
+                            lang.translate(
+                              'config_edit_punishments',
+                            ), // <--- Texto dinámico
+                            style: const TextStyle(
                               fontFamily: 'Bungee',
                               fontSize: 16,
                               color: Colors.white,
                             ),
                           ),
-                          Icon(Icons.edit_note, color: AppColors.accent),
+                          const Icon(Icons.edit_note, color: AppColors.accent),
                         ],
                       ),
                     ),
@@ -89,7 +97,7 @@ class ConfigScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(20),
               child: BouncyButton(
-                text: "COMENZAR PARTIDA",
+                text: lang.translate('config_btn_start'), // <--- Texto dinámico
                 onPressed: () {
                   game.startGame();
                   // Usamos pushAndRemoveUntil para reiniciar la pila de navegación

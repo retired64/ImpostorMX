@@ -22,8 +22,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
 import 'package:provider/provider.dart';
 import 'package:vibration/vibration.dart';
-import 'package:confetti/confetti.dart'; // <--- 1. IMPORTAR LIBRERÍA
+import 'package:confetti/confetti.dart';
 import '../providers/game_provider.dart';
+import '../providers/language_provider.dart'; // <--- IMPORTAMOS EL LANGUAGE PROVIDER
 import '../widgets/inputs.dart';
 import '../config/theme.dart';
 import '../utils/sound_manager.dart';
@@ -35,18 +36,24 @@ class ResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lang = Provider.of<LanguageProvider>(
+      context,
+    ); // <--- INSTANCIAMOS EL IDIOMA
     final bool isImpostor = votedPlayer.role == 'impostor';
 
     // Colores de fondo según el resultado
     final bgColor = isImpostor
         ? const Color(0xFF00C853)
         : const Color(0xFFD50000);
+
+    // Textos traducidos según el rol
     final winnerText = isImpostor
-        ? "¡GANAN LOS CIVILES!"
-        : "¡GANA EL IMPOSTOR!";
+        ? lang.translate('result_win_civilians')
+        : lang.translate('result_win_impostor');
+
     final loserTitle = isImpostor
-        ? "Castigo para el IMPOSTOR"
-        : "Castigo para los CIVILES";
+        ? lang.translate('result_punish_impostor')
+        : lang.translate('result_punish_civilians');
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -110,9 +117,11 @@ class ResultScreen extends StatelessWidget {
                           (r) => false,
                         );
                       },
-                      child: const Text(
-                        "SALIR",
-                        style: TextStyle(
+                      child: Text(
+                        lang.translate(
+                          'result_btn_exit',
+                        ), // <--- TEXTO DINÁMICO
+                        style: const TextStyle(
                           color: Colors.white54,
                           fontWeight: FontWeight.bold,
                         ),
@@ -122,7 +131,9 @@ class ResultScreen extends StatelessWidget {
                   const SizedBox(width: 20),
                   Expanded(
                     child: BouncyButton(
-                      text: "JUGAR OTRA",
+                      text: lang.translate(
+                        'result_btn_play_again',
+                      ), // <--- TEXTO DINÁMICO
                       color: AppColors.accent,
                       onPressed: () {
                         Provider.of<GameProvider>(
@@ -157,7 +168,7 @@ class PunishmentRoulette extends StatefulWidget {
 
 class _PunishmentRouletteState extends State<PunishmentRoulette> {
   final StreamController<int> _selected = StreamController<int>();
-  late ConfettiController _confettiController; // <--- 2. CONTROLADOR
+  late ConfettiController _confettiController;
 
   bool _isSpinning = false;
   int _lastIndex = 0;
@@ -184,7 +195,7 @@ class _PunishmentRouletteState extends State<PunishmentRoulette> {
   @override
   void dispose() {
     _selected.close();
-    _confettiController.dispose(); // <--- IMPORTANTE: Limpiar memoria
+    _confettiController.dispose();
     super.dispose();
   }
 
@@ -207,10 +218,12 @@ class _PunishmentRouletteState extends State<PunishmentRoulette> {
   @override
   Widget build(BuildContext context) {
     final punishments = Provider.of<GameProvider>(context).punishments;
+    final lang = Provider.of<LanguageProvider>(
+      context,
+    ); // <--- INSTANCIAMOS EL IDIOMA
 
-    // 3. ENVOLVER EN STACK PARA PONER EL CONFETI ENCIMA
     return Stack(
-      alignment: Alignment.topCenter, // El confeti cae desde arriba al centro
+      alignment: Alignment.topCenter,
       children: [
         // --- CAPA 1: La Ruleta y Botones ---
         Column(
@@ -243,10 +256,10 @@ class _PunishmentRouletteState extends State<PunishmentRoulette> {
                         setState(() => _isSpinning = false);
                         Vibration.vibrate(pattern: [0, 50, 100, 500]);
 
-                        // 4. DISPARAR CONFETI AL TERMINAR
+                        // Disparar confeti
                         _confettiController.play();
 
-                        _showResultDialog();
+                        _showResultDialog(lang); // <--- PASAMOS EL PROVIDER
                       },
                       indicators: const <FortuneIndicator>[
                         FortuneIndicator(
@@ -257,6 +270,15 @@ class _PunishmentRouletteState extends State<PunishmentRoulette> {
                       items: [
                         for (int i = 0; i < punishments.length; i++)
                           FortuneItem(
+                            child: Padding(
+                              padding: const EdgeInsets.all(25.0),
+                              child: Text(
+                                punishments[i],
+                                textAlign: TextAlign.center,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                             style: FortuneItemStyle(
                               color: _colors[i % _colors.length],
                               borderColor: Colors.white24,
@@ -266,15 +288,6 @@ class _PunishmentRouletteState extends State<PunishmentRoulette> {
                                 fontFamily: 'YoungSerif',
                                 fontSize: 14,
                                 color: Colors.black87,
-                              ),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(25.0),
-                              child: Text(
-                                punishments[i],
-                                textAlign: TextAlign.center,
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ),
@@ -326,14 +339,14 @@ class _PunishmentRouletteState extends State<PunishmentRoulette> {
 
             if (!_isSpinning)
               BouncyButton(
-                text: "GIRAR RULETA",
+                text: lang.translate('result_btn_spin'), // <--- TEXTO DINÁMICO
                 color: Colors.white,
                 onPressed: _spin,
               )
             else
-              const Text(
-                "¡SUERTE!",
-                style: TextStyle(
+              Text(
+                lang.translate('result_luck'), // <--- TEXTO DINÁMICO
+                style: const TextStyle(
                   fontFamily: 'Bungee',
                   fontSize: 20,
                   color: Colors.white,
@@ -342,12 +355,11 @@ class _PunishmentRouletteState extends State<PunishmentRoulette> {
           ],
         ),
 
-        // --- CAPA 2: El Widget de Confeti (Invisible hasta disparar) ---
+        // --- CAPA 2: Confeti ---
         ConfettiWidget(
           confettiController: _confettiController,
-          blastDirectionality:
-              BlastDirectionality.explosive, // Explosión en todas direcciones
-          shouldLoop: false, // Solo una explosión, no infinito
+          blastDirectionality: BlastDirectionality.explosive,
+          shouldLoop: false,
           colors: const [
             Colors.green,
             Colors.blue,
@@ -355,14 +367,14 @@ class _PunishmentRouletteState extends State<PunishmentRoulette> {
             Colors.orange,
             Colors.purple,
           ],
-          gravity: 0.3, // Caída un poco lenta para apreciar
-          numberOfParticles: 25, // Cantidad de papeles
+          gravity: 0.3,
+          numberOfParticles: 25,
         ),
       ],
     );
   }
 
-  void _showResultDialog() {
+  void _showResultDialog(LanguageProvider lang) {
     final punishments = Provider.of<GameProvider>(
       context,
       listen: false,
@@ -390,10 +402,10 @@ class _PunishmentRouletteState extends State<PunishmentRoulette> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                "🔥 TU CASTIGO 🔥",
+              Text(
+                lang.translate('result_your_punishment'), // <--- TEXTO DINÁMICO
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontFamily: 'Bungee',
                   color: AppColors.error,
                   fontSize: 24,
@@ -411,7 +423,9 @@ class _PunishmentRouletteState extends State<PunishmentRoulette> {
               ),
               const SizedBox(height: 30),
               BouncyButton(
-                text: "ACEPTAR",
+                text: lang.translate(
+                  'result_btn_accept',
+                ), // <--- TEXTO DINÁMICO
                 onPressed: () => Navigator.pop(context),
               ),
             ],

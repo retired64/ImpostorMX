@@ -20,6 +20,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/game_provider.dart';
+import '../providers/language_provider.dart'; // <--- IMPORTAMOS EL LANGUAGE PROVIDER
 import '../widgets/common.dart';
 import '../widgets/inputs.dart';
 import '../config/theme.dart';
@@ -44,6 +45,11 @@ class _TimerScreenState extends State<TimerScreen> {
 
   void _listener() {
     final g = Provider.of<GameProvider>(context, listen: false);
+    final lang = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    ); // <--- INSTANCIAMOS EL IDIOMA PARA EL MODAL
+
     if (g.status == GameStatus.finished && mounted) {
       showDialog(
         barrierDismissible: false,
@@ -64,10 +70,15 @@ class _TimerScreenState extends State<TimerScreen> {
                 children: [
                   const Icon(Icons.timer_off, color: AppColors.error, size: 50),
                   const SizedBox(height: 20),
-                  Text("TIEMPO", style: AppTheme.heading(30)),
+                  Text(
+                    lang.translate('timer_time_up'),
+                    style: AppTheme.heading(30),
+                  ), // <--- TEXTO DINÁMICO
                   const SizedBox(height: 30),
                   BouncyButton(
-                    text: "VOTAR",
+                    text: lang.translate(
+                      'timer_btn_vote',
+                    ), // <--- TEXTO DINÁMICO
                     onPressed: () {
                       g.stopAudio();
                       Navigator.pop(context);
@@ -102,7 +113,11 @@ class _TimerScreenState extends State<TimerScreen> {
   @override
   Widget build(BuildContext context) {
     final g = Provider.of<GameProvider>(context);
+    final lang = Provider.of<LanguageProvider>(
+      context,
+    ); // <--- INSTANCIAMOS EL IDIOMA PARA LA PANTALLA
     final progress = g.remainingSeconds / g.initialTimeSeconds;
+
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -111,7 +126,10 @@ class _TimerScreenState extends State<TimerScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("DEBATE", style: AppTheme.heading(20)),
+              Text(
+                lang.translate('timer_debate'),
+                style: AppTheme.heading(20),
+              ), // <--- TEXTO DINÁMICO
               const SizedBox(height: 10),
               Text(
                 g.selectedCategory!.name,
@@ -163,7 +181,7 @@ class _TimerScreenState extends State<TimerScreen> {
               Padding(
                 padding: const EdgeInsets.all(30),
                 child: BouncyButton(
-                  text: "VOTAR",
+                  text: lang.translate('timer_btn_vote'), // <--- TEXTO DINÁMICO
                   color: Colors.white,
                   onPressed: () {
                     g.finishGameAndVote();

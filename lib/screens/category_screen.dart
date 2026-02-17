@@ -21,6 +21,7 @@ import 'package:provider/provider.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/game_provider.dart';
+import '../providers/language_provider.dart'; // <-- Importamos el LanguageProvider
 import '../widgets/common.dart';
 import '../config/theme.dart';
 import '../words.dart';
@@ -64,88 +65,137 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
   // --- MOSTRAR EL MENÚ PRINCIPAL (SETTINGS) ---
   void _showSettingsModal(BuildContext context) {
+    // Necesitamos escuchar los cambios aquí adentro si usamos un modal
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => Container(
-        padding: const EdgeInsets.all(25),
-        decoration: const BoxDecoration(
-          color: AppColors.bgBottom,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-          border: Border(top: BorderSide(color: AppColors.accent, width: 2)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              "MENÚ",
-              style: TextStyle(
-                fontFamily: 'Bungee',
-                fontSize: 24,
-                color: Colors.white,
+      builder: (_) {
+        // Usamos un Builder interno para suscribirnos al provider de idiomas
+        return Consumer<LanguageProvider>(
+          builder: (context, lang, child) {
+            return Container(
+              padding: const EdgeInsets.all(25),
+              decoration: const BoxDecoration(
+                color: AppColors.bgBottom,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+                border: Border(
+                  top: BorderSide(color: AppColors.accent, width: 2),
+                ),
               ),
-            ),
-            const SizedBox(height: 25),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    lang.translate('menu_title'),
+                    style: const TextStyle(
+                      fontFamily: 'Bungee',
+                      fontSize: 24,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 25),
 
-            // 1. BOTÓN CREAR CATEGORÍA (Estilo Ko-fi)
-            _MenuButton(
-              text: "Crear Categoría",
-              color: AppColors.accent, // Verde neón
-              textColor: Colors.black,
-              icon: Icons.add_circle_outline,
-              iconColor: Colors.black,
-              onTap: _goToCreateCategory,
-            ),
+                  // 1. BOTÓN CREAR CATEGORÍA (Estilo Ko-fi)
+                  _MenuButton(
+                    text: lang.translate('btn_create_category'),
+                    color: AppColors.accent, // Verde neón
+                    textColor: Colors.black,
+                    icon: Icons.add_circle_outline,
+                    iconColor: Colors.black,
+                    onTap: _goToCreateCategory,
+                  ),
 
-            const SizedBox(height: 15),
+                  const SizedBox(height: 15),
 
-            // 2. BOTÓN SITIO OFICIAL (Estilo Ko-fi)
-            _MenuButton(
-              text: "Sitio Oficial",
-              color: const Color(0xFF800020), // Rojo Vino
-              textColor: Colors.white,
-              // Usamos tu imagen png aquí
-              customIcon: Image.asset(
-                'assets/images/impostor.png',
-                height: 24,
-                errorBuilder: (c, o, s) =>
-                    const Icon(Icons.public, color: Colors.white),
+                  // 2. BOTÓN SITIO OFICIAL (Estilo Ko-fi)
+                  _MenuButton(
+                    text: lang.translate('btn_official_site'),
+                    color: const Color(0xFF800020), // Rojo Vino
+                    textColor: Colors.white,
+                    // Usamos tu imagen png aquí
+                    customIcon: Image.asset(
+                      'assets/images/impostor.png',
+                      height: 24,
+                      errorBuilder: (c, o, s) =>
+                          const Icon(Icons.public, color: Colors.white),
+                    ),
+                    onTap: _launchOfficialSite,
+                  ),
+
+                  const SizedBox(height: 25),
+                  const Divider(color: Colors.white24),
+                  const SizedBox(height: 15),
+
+                  // --- NUEVO SELECTOR DE IDIOMA ---
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.language,
+                        color: Colors.white54,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      _LangButton(
+                        text: 'ES',
+                        isSelected: lang.currentLanguage == 'es',
+                        onTap: () => lang.setLanguage('es'),
+                      ),
+                      const SizedBox(width: 10),
+                      _LangButton(
+                        text: 'EN',
+                        isSelected: lang.currentLanguage == 'en',
+                        onTap: () => lang.setLanguage('en'),
+                      ),
+                      const SizedBox(width: 10),
+                      _LangButton(
+                        text: 'PT',
+                        isSelected: lang.currentLanguage == 'pt',
+                        onTap: () => lang.setLanguage('pt'),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 15),
+                  const Divider(color: Colors.white24),
+                  const SizedBox(height: 10),
+
+                  Text(
+                    lang.translate('txt_support'),
+                    style: const TextStyle(
+                      fontFamily: 'YoungSerif',
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // 3. BOTÓN KO-FI (Con animación especial)
+                  _AnimatedKoFiButton(
+                    text: lang.translate('btn_kofi'),
+                    onTap: _launchKoFi,
+                  ),
+
+                  const SizedBox(height: 20),
+                  Text(
+                    lang.translate('txt_version'),
+                    style: const TextStyle(color: Colors.white24, fontSize: 10),
+                  ),
+                ],
               ),
-              onTap: _launchOfficialSite,
-            ),
-
-            const SizedBox(height: 25),
-            const Divider(color: Colors.white24),
-            const SizedBox(height: 10),
-
-            const Text(
-              "¡Apoya el desarrollo!",
-              style: TextStyle(
-                fontFamily: 'YoungSerif',
-                color: Colors.white70,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 10),
-
-            // 3. BOTÓN KO-FI (Con animación especial)
-            _AnimatedKoFiButton(onTap: _launchKoFi),
-
-            const SizedBox(height: 20),
-            const Text(
-              "v2.0 Open Source - by Retired64",
-              style: TextStyle(color: Colors.white24, fontSize: 10),
-            ),
-          ],
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final game = Provider.of<GameProvider>(context);
+    final lang = Provider.of<LanguageProvider>(context);
+    game.currentLang = lang.currentLanguage;
 
     return Scaffold(
       floatingActionButton: _showTutorial
@@ -175,7 +225,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             "impostormx.store",
                             style: TextStyle(
                               fontFamily: 'YoungSerif',
@@ -184,8 +234,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
                             ),
                           ),
                           Text(
-                            "Elige un tema",
-                            style: TextStyle(
+                            lang.translate('txt_choose_theme'),
+                            style: const TextStyle(
                               fontFamily: 'Bungee',
                               fontSize: 32,
                               color: AppColors.text,
@@ -239,7 +289,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     itemCount: game.allCategories.length,
                     itemBuilder: (ctx, i) {
                       final cat = game.allCategories[i];
-                      final isCustom = i >= GAME_CATEGORIES.length;
+                      // CORRECCIÓN: Usamos la función dinámica para contar las categorías base del idioma actual
+                      final isCustom =
+                          i >= getGameCategories(lang.currentLanguage).length;
+
                       return GestureDetector(
                         onTap: () {
                           SoundManager.playClick();
@@ -247,7 +300,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           Navigator.pushNamed(context, '/players');
                         },
                         onLongPress: isCustom
-                            ? () => _showOptions(context, game, cat)
+                            ? () => _showOptions(context, game, cat, lang)
                             : null,
                         child: Container(
                           decoration: BoxDecoration(
@@ -277,7 +330,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                               ),
                               const SizedBox(height: 5),
                               Text(
-                                "${cat.words.length} cartas",
+                                "${cat.words.length} ${lang.translate('txt_cards')}",
                                 style: const TextStyle(
                                   fontFamily: 'YoungSerif',
                                   fontSize: 12,
@@ -320,7 +373,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
     );
   }
 
-  void _showOptions(BuildContext context, GameProvider game, Category cat) {
+  void _showOptions(
+    BuildContext context,
+    GameProvider game,
+    Category cat,
+    LanguageProvider lang,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -335,9 +393,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.edit, color: AppColors.accent),
-              title: const Text(
-                "Editar",
-                style: TextStyle(color: Colors.white, fontFamily: 'YoungSerif'),
+              title: Text(
+                lang.translate('btn_edit'),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'YoungSerif',
+                ),
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -351,9 +412,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.delete, color: AppColors.error),
-              title: const Text(
-                "Eliminar",
-                style: TextStyle(color: Colors.white, fontFamily: 'YoungSerif'),
+              title: Text(
+                lang.translate('btn_delete'),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'YoungSerif',
+                ),
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -361,6 +425,49 @@ class _CategoryScreenState extends State<CategoryScreen> {
               },
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- WIDGET PARA SELECCIONAR IDIOMA ---
+class _LangButton extends StatelessWidget {
+  final String text;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _LangButton({
+    required this.text,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        SoundManager.playClick();
+        onTap();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.accent : Colors.white10,
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(
+            color: isSelected ? AppColors.accent : Colors.white24,
+            width: 2,
+          ),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            fontFamily: 'Bungee',
+            color: isSelected ? Colors.black : Colors.white54,
+            fontSize: 14,
+          ),
         ),
       ),
     );
@@ -427,10 +534,11 @@ class _MenuButton extends StatelessWidget {
   }
 }
 
-// --- WIDGET KO-FI ANIMADO (El original con latido) ---
+// --- WIDGET KO-FI ANIMADO ---
 class _AnimatedKoFiButton extends StatefulWidget {
+  final String text;
   final VoidCallback onTap;
-  const _AnimatedKoFiButton({required this.onTap});
+  const _AnimatedKoFiButton({required this.text, required this.onTap});
 
   @override
   State<_AnimatedKoFiButton> createState() => _AnimatedKoFiButtonState();
@@ -465,7 +573,7 @@ class _AnimatedKoFiButtonState extends State<_AnimatedKoFiButton>
       child: GestureDetector(
         onTap: widget.onTap,
         child: Container(
-          height: 60, // Un pelín más grande para resaltar
+          height: 60,
           decoration: BoxDecoration(
             color: const Color(0xFF29ABE0),
             borderRadius: BorderRadius.circular(30),
@@ -490,9 +598,9 @@ class _AnimatedKoFiButtonState extends State<_AnimatedKoFiButton>
                 ),
               ),
               const SizedBox(width: 10),
-              const Text(
-                "Invítame un Café",
-                style: TextStyle(
+              Text(
+                widget.text,
+                style: const TextStyle(
                   fontFamily: 'Bungee',
                   color: Colors.white,
                   fontSize: 16,
@@ -507,7 +615,7 @@ class _AnimatedKoFiButtonState extends State<_AnimatedKoFiButton>
   }
 }
 
-// --- WIDGET TUTORIAL (Sin cambios) ---
+// --- WIDGET TUTORIAL CON IDIOMAS ---
 class _TutorialCard extends StatefulWidget {
   final VoidCallback onClose;
   const _TutorialCard({required this.onClose});
@@ -520,34 +628,6 @@ class _TutorialCardState extends State<_TutorialCard> {
   int _currentStep = 0;
   late AudioPlayer _audioPlayer;
   bool _isPlaying = false;
-
-  final List<Map<String, String>> _steps = [
-    {
-      "title": "PASO 1",
-      "text":
-          "Elige una categoría temática para jugar. ¡Usa el botón de Ajustes (⚙️) para crear las tuyas propias!",
-    },
-    {
-      "title": "PASO 2",
-      "text":
-          "Pasa el celular para que cada uno configure su nombre y PIN, una vez completado dale em continuar y configura cuántos Impostores habrá en la partida. ahí mismo puedes configurar el tiempo de debate y poner tus propios castigos de la ruleta.",
-    },
-    {
-      "title": "PASO 3",
-      "text":
-          "Pasen el celular. Cada jugador deberá ingresar su PIN, una vez completado verá su palabra secreta, pero... ¡El Impostor no verá nada!",
-    },
-    {
-      "title": "PASO 4",
-      "text":
-          "¡A debatir! Hagan preguntas y describan su palabra sin ser muy obvios para no ayudar al Impostor.",
-    },
-    {
-      "title": "PASO 5",
-      "text":
-          "Cuando el tiempo acabe, voten por quien crean que miente. ¡Si atrapan al Impostor, ganan los civiles! Si el Impostor sobrevive, gana él! El perdedor de la partida tendrá que girar la ruleta de castigos... ¡Suerte!",
-    },
-  ];
 
   @override
   void initState() {
@@ -566,17 +646,22 @@ class _TutorialCardState extends State<_TutorialCard> {
   }
 
   void _toggleAudio() async {
+    final langCode = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    ).currentLanguage;
     if (_isPlaying) {
       await _audioPlayer.pause();
       setState(() => _isPlaying = false);
     } else {
-      await _audioPlayer.play(AssetSource('sounds/pasos.mp3'));
+      // Usamos la variable langCode para buscar el audio correcto
+      await _audioPlayer.play(AssetSource('sounds/$langCode/pasos.mp3'));
       setState(() => _isPlaying = true);
     }
   }
 
-  void _next() {
-    if (_currentStep < _steps.length - 1) {
+  void _next(int totalSteps) {
+    if (_currentStep < totalSteps - 1) {
       setState(() => _currentStep++);
     } else {
       widget.onClose();
@@ -585,8 +670,35 @@ class _TutorialCardState extends State<_TutorialCard> {
 
   @override
   Widget build(BuildContext context) {
-    final step = _steps[_currentStep];
-    final isLast = _currentStep == _steps.length - 1;
+    final lang = Provider.of<LanguageProvider>(context);
+
+    // Los pasos se generan dentro del build para que reaccionen al cambio de idioma
+    final List<Map<String, String>> steps = [
+      {
+        "title": lang.translate('tut_step1_title'),
+        "text": lang.translate('tut_step1_desc'),
+      },
+      {
+        "title": lang.translate('tut_step2_title'),
+        "text": lang.translate('tut_step2_desc'),
+      },
+      {
+        "title": lang.translate('tut_step3_title'),
+        "text": lang.translate('tut_step3_desc'),
+      },
+      {
+        "title": lang.translate('tut_step4_title'),
+        "text": lang.translate('tut_step4_desc'),
+      },
+      {
+        "title": lang.translate('tut_step5_title'),
+        "text": lang.translate('tut_step5_desc'),
+      },
+    ];
+
+    final step = steps[_currentStep];
+    final isLast = _currentStep == steps.length - 1;
+
     return Container(
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
@@ -653,7 +765,7 @@ class _TutorialCardState extends State<_TutorialCard> {
             children: [
               Row(
                 children: List.generate(
-                  _steps.length,
+                  steps.length,
                   (index) => Container(
                     margin: const EdgeInsets.only(right: 6),
                     width: 8,
@@ -668,7 +780,7 @@ class _TutorialCardState extends State<_TutorialCard> {
                 ),
               ),
               ElevatedButton(
-                onPressed: _next,
+                onPressed: () => _next(steps.length),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isLast ? AppColors.error : AppColors.accent,
                   foregroundColor: isLast ? Colors.white : Colors.black,
@@ -681,7 +793,9 @@ class _TutorialCardState extends State<_TutorialCard> {
                   ),
                 ),
                 child: Text(
-                  isLast ? "FINALIZAR" : "SIGUIENTE",
+                  isLast
+                      ? lang.translate('tut_btn_finish')
+                      : lang.translate('tut_btn_next'),
                   style: const TextStyle(fontFamily: 'Bungee', fontSize: 14),
                 ),
               ),

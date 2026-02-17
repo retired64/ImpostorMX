@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vibration/vibration.dart';
 import '../providers/game_provider.dart';
+import '../providers/language_provider.dart'; // <--- IMPORTAMOS EL LANGUAGE PROVIDER
 import '../widgets/common.dart';
 import '../widgets/inputs.dart';
 import '../config/theme.dart';
@@ -35,9 +36,14 @@ class RevealScreen extends StatefulWidget {
 
 class _RevealScreenState extends State<RevealScreen> {
   bool _isPeeking = false;
+
   @override
   Widget build(BuildContext context) {
     final game = Provider.of<GameProvider>(context);
+    final lang = Provider.of<LanguageProvider>(
+      context,
+    ); // <--- INSTANCIAMOS EL IDIOMA
+
     final isImpostor = game.getCurrentPlayer().role == 'impostor';
     final roleColor = isImpostor ? AppColors.error : AppColors.accent;
 
@@ -47,9 +53,15 @@ class _RevealScreenState extends State<RevealScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("MANTÉN PRESIONADO", style: AppTheme.heading(20)),
+              Text(
+                lang.translate('reveal_hold'),
+                style: AppTheme.heading(20),
+              ), // <--- TEXTO DINÁMICO
               const SizedBox(height: 10),
-              Text("para ver tu carta secreta", style: AppTheme.body(14)),
+              Text(
+                lang.translate('reveal_to_see'),
+                style: AppTheme.body(14),
+              ), // <--- TEXTO DINÁMICO
               const Spacer(),
               GestureDetector(
                 onTapDown: (_) {
@@ -92,7 +104,11 @@ class _RevealScreenState extends State<RevealScreen> {
                             ),
                             const SizedBox(height: 20),
                             Text(
-                              isImpostor ? "IMPOSTOR" : "CIVIL",
+                              isImpostor
+                                  ? lang.translate('reveal_impostor')
+                                  : lang.translate(
+                                      'reveal_civilian',
+                                    ), // <--- TEXTO DINÁMICO
                               style: TextStyle(
                                 fontFamily: 'YoungSerif',
                                 fontSize: 36,
@@ -115,7 +131,9 @@ class _RevealScreenState extends State<RevealScreen> {
                                   horizontal: 20,
                                 ),
                                 child: Text(
-                                  "Engaña a todos",
+                                  lang.translate(
+                                    'reveal_deceive',
+                                  ), // <--- TEXTO DINÁMICO
                                   textAlign: TextAlign.center,
                                   style: AppTheme.body(18),
                                 ),
@@ -132,7 +150,9 @@ class _RevealScreenState extends State<RevealScreen> {
                             ),
                             const SizedBox(height: 20),
                             Text(
-                              "TOP SECRET",
+                              lang.translate(
+                                'reveal_top_secret',
+                              ), // <--- TEXTO DINÁMICO
                               style: const TextStyle(
                                 fontFamily: 'YoungSerif',
                                 fontSize: 30,
@@ -147,7 +167,9 @@ class _RevealScreenState extends State<RevealScreen> {
               Padding(
                 padding: const EdgeInsets.all(30),
                 child: BouncyButton(
-                  text: "CONTINUAR",
+                  text: lang.translate(
+                    'reveal_btn_continue',
+                  ), // <--- TEXTO DINÁMICO
                   color: Colors.white,
                   onPressed: () {
                     final active = game.players
