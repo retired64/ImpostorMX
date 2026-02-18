@@ -1,6 +1,19 @@
-Versión 2.1.0 - Actualización Multiidioma
-- Soporte completo para Español, Inglés y Portugués
-- Detección automática del idioma del dispositivo al primer inicio
-- Selector de idioma en tiempo real en el menú de configuración
-- Efectos de sonido y audio ahora se reproducen en el idioma seleccionado
-- Las palabras de categorías y castigos de la ruleta se adaptan al idioma activo
+Novedades 2.1.0 – Actualización Multiidioma
+Idiomas disponibles:
+
+🇪🇸 Español
+🇺🇸 Inglés
+🇧🇷 Portugués (Brasil)
+🇫🇷 Francés
+🇩🇪 Alemán
+🇮🇳 Hindi
+🇯🇵 Japonés
+🇰🇷 Coreano
+🇸🇦 Árabe
+
+⚙️ Mejoras incluidas:
+
+- Detección automática del idioma del dispositivo en el primer inicio.
+- Selector de idioma en tiempo real desde el menú de configuración.
+- Efectos de sonido y audios adaptados al idioma seleccionado.
+- Palabras de categorías y castigos de la ruleta ajustados automáticamente según el idioma activo.

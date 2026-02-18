@@ -1,6 +1,19 @@
-Version v2.1.0 - Multi-Language Update
-- Full support for Spanish, English, and Portuguese
-- Automatic language detection on first launch
-- Real-time language selector in settings menu
-- Sound effects and audio now play in selected language
-- Category words and roulette punishments adapt to active language
+What’s New 2.1.0 – Multilingual Update
+Available Languages:
+
+🇪🇸 Spanish
+🇺🇸 English
+🇧🇷 Portuguese (Brazil)
+🇫🇷 French
+🇩🇪 German
+🇮🇳 Hindi
+🇯🇵 Japanese
+🇰🇷 Korean
+🇸🇦 Arabic
+
+⚙️ Included Improvements:
+
+- Automatic device language detection on first launch.
+- Real-time language selector available in the settings menu.
+- Sound effects and audio now adapt to the selected language.
+- Category words and wheel penalties automatically adjust based on the active language.
