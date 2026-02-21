@@ -131,13 +131,17 @@ class _TimerScreenState extends State<TimerScreen> {
                 style: AppTheme.heading(20),
               ), // <--- TEXTO DINÁMICO
               const SizedBox(height: 10),
+
+              // --- AQUÍ ESTÁ EL CAMBIO CLAVE ---
               Text(
-                g.selectedCategory!.name,
+                g.selectedCategoriesName,
                 style: const TextStyle(
                   color: AppColors.accent,
                   letterSpacing: 2,
                 ),
               ),
+
+              // ---------------------------------
               const Spacer(),
               Stack(
                 alignment: Alignment.center,

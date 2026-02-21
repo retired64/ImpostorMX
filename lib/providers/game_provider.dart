@@ -26,7 +26,7 @@ import 'package:vibration/vibration.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../config/constants.dart';
 import '../words.dart';
-import '../lang/es.dart'; // Importado para el fallback seguro inicial
+import '../lang/es.dart';
 
 class Player {
   String id;
@@ -46,21 +46,27 @@ class Player {
 enum GameStatus { setup, playing, finished }
 
 class GameProvider with ChangeNotifier {
-  // --- NUEVO: Variable para el idioma actual ---
   String currentLang = 'es';
-
-  // Lógica de Categorías y Jugadores
-  List<String> punishments = []; // Lista dinámica de castigos
+  List<String> punishments = [];
   List<Category> _customCategories = [];
 
-  // --- MODIFICADO: Ahora solicita las categorías según el idioma actual ---
   List<Category> get allCategories => [
     ...getGameCategories(currentLang),
     ..._customCategories,
   ];
 
   List<Player> players = [];
-  Category? selectedCategory;
+
+  // --- NUEVA IMPLEMENTACIÓN: Selección múltiple ---
+  List<Category> selectedCategories = [];
+
+  // Getter auxiliar para mostrar el nombre en pantallas de juego
+  String get selectedCategoriesName {
+    if (selectedCategories.isEmpty) return "";
+    if (selectedCategories.length == 1) return selectedCategories.first.name;
+    return "MIX (${selectedCategories.length})";
+  }
+
   String secretWord = '';
 
   // Configuración de Partida
@@ -74,13 +80,12 @@ class GameProvider with ChangeNotifier {
   bool isTimerRunning = false;
   GameStatus status = GameStatus.setup;
 
-  late AudioPlayer _audioPlayer; // Alarma final
-  final AudioPlayer _effectPlayer = AudioPlayer(); // Efecto Tic-Tac
+  late AudioPlayer _audioPlayer;
+  final AudioPlayer _effectPlayer = AudioPlayer();
   bool _isPlayingAudio = false;
 
   GameProvider() {
     _audioPlayer = AudioPlayer();
-    // Pre-cargamos el sonido del tic-tac para evitar retrasos (este no cambia por idioma)
     _effectPlayer.setSource(AssetSource('sounds/tictac.mp3'));
 
     _initGame();
@@ -124,6 +129,7 @@ class GameProvider with ChangeNotifier {
 
   Future<void> deleteCustomCategory(String id) async {
     _customCategories.removeWhere((c) => c.id == id);
+    selectedCategories.removeWhere((c) => c.id == id);
     await _persistCategories();
     notifyListeners();
   }
@@ -143,7 +149,6 @@ class GameProvider with ChangeNotifier {
     if (stored != null && stored.isNotEmpty) {
       punishments = stored;
     } else {
-      // Usamos el español como respaldo si la app es nueva y aún no detecta el idioma
       punishments = List.from(defaultPunishmentsEs);
     }
     notifyListeners();
@@ -163,7 +168,6 @@ class GameProvider with ChangeNotifier {
     }
   }
 
-  // --- MODIFICADO: Recibe los castigos según el idioma seleccionado ---
   Future<void> resetPunishments(List<String> defaultLangPunishments) async {
     punishments = List.from(defaultLangPunishments);
     await _savePunishments();
@@ -176,7 +180,6 @@ class GameProvider with ChangeNotifier {
   }
 
   // --- HARDWARE (AUDIO & VIBRACIÓN) ---
-  // --- MODIFICADO: El audio se reproduce desde la carpeta del idioma actual ---
   Future<void> playAlarm() async {
     try {
       if (_isPlayingAudio) await _audioPlayer.stop();
@@ -264,9 +267,16 @@ class GameProvider with ChangeNotifier {
     }
   }
 
-  // --- AJUSTES ---
-  void selectCategory(Category cat) {
-    selectedCategory = cat;
+  // --- AJUSTES DE CATEGORÍA ---
+
+  // Función para agregar o quitar categorías de la selección
+  void toggleCategory(Category cat) {
+    final index = selectedCategories.indexWhere((c) => c.id == cat.id);
+    if (index != -1) {
+      selectedCategories.removeAt(index);
+    } else {
+      selectedCategories.add(cat);
+    }
     _hapticLight();
     notifyListeners();
   }
@@ -294,7 +304,8 @@ class GameProvider with ChangeNotifier {
 
   // --- GAMEPLAY: ALGORITMO CAOS V2 ---
   void startGame() {
-    if (selectedCategory == null) return;
+    // Validamos que haya selección
+    if (selectedCategories.isEmpty) return;
 
     final lockedPlayers = players.where((p) => p.isLocked).toList();
     if (lockedPlayers.length < GameConstants.minPlayers) return;
@@ -308,9 +319,18 @@ class GameProvider with ChangeNotifier {
     }
 
     final random = Random(DateTime.now().microsecondsSinceEpoch);
-    secretWord =
-        selectedCategory!.words[random.nextInt(selectedCategory!.words.length)];
 
+    // --- Lógica de combinación de palabras ---
+    List<String> combinedWords = [];
+    for (var cat in selectedCategories) {
+      combinedWords.addAll(cat.words);
+    }
+    // Seleccionamos la palabra del pozo acumulado
+    secretWord = combinedWords[random.nextInt(combinedWords.length)];
+
+    // ======================================================================
+    // MANTENEMOS EL ALGORITMO CAOS V2 TAL CUAL PARA LOS IMPOSTORES
+    // ======================================================================
     int safeImpostorCount = impostorCount;
     if (safeImpostorCount >= lockedPlayers.length) safeImpostorCount = 1;
 
@@ -325,6 +345,7 @@ class GameProvider with ChangeNotifier {
       lockedPlayers[luckyPlayerIndex].role = 'impostor';
       bagOfIndices.removeAt(randomIndex);
     }
+    // ======================================================================
 
     currentTurnIndex = 0;
     status = GameStatus.playing;
@@ -346,7 +367,7 @@ class GameProvider with ChangeNotifier {
     return active[currentTurnIndex];
   }
 
-  // --- TIMER (CON TIC-TAC) ---
+  // --- TIMER ---
   void startTimer() {
     WakelockPlus.enable();
     isTimerRunning = true;
@@ -439,7 +460,7 @@ class GameProvider with ChangeNotifier {
     _timer?.cancel();
     stopAudio();
     WakelockPlus.disable();
-    selectedCategory = null;
+    selectedCategories.clear();
     status = GameStatus.setup;
     isTimerRunning = false;
     currentTurnIndex = 0;

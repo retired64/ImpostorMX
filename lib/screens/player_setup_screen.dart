@@ -20,11 +20,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:provider/provider.dart';
 import '../providers/game_provider.dart';
-import '../providers/language_provider.dart'; // <--- IMPORTAMOS EL LANGUAGE PROVIDER
+import '../providers/language_provider.dart';
 import '../widgets/common.dart';
 import '../widgets/inputs.dart';
 import '../config/theme.dart';
 import '../config/constants.dart';
+import '../utils/sound_manager.dart'; // Importante para los sonidos de los botones
 
 class PlayerSetupScreen extends StatelessWidget {
   const PlayerSetupScreen({super.key});
@@ -32,9 +33,7 @@ class PlayerSetupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final game = Provider.of<GameProvider>(context);
-    final lang = Provider.of<LanguageProvider>(
-      context,
-    ); // <--- INSTANCIAMOS EL IDIOMA
+    final lang = Provider.of<LanguageProvider>(context);
     final count = game.players.where((p) => p.isLocked).length;
 
     return Scaffold(
@@ -42,12 +41,18 @@ class PlayerSetupScreen extends StatelessWidget {
         child: Column(
           children: [
             GameNavBar(
-              // Texto dinámico con la variable del conteo inyectada
               title: "${lang.translate('players_title')} ($count)",
               onBack: () => Navigator.pop(context),
               action: IconButton(
-                icon: const Icon(Icons.person_add, color: AppColors.accent),
-                onPressed: game.addPlayer,
+                icon: const Icon(
+                  Icons.person_add,
+                  color: AppColors.accent,
+                  size: 28,
+                ),
+                onPressed: () {
+                  SoundManager.playClick();
+                  game.addPlayer();
+                },
               ),
             ),
             Expanded(
@@ -75,11 +80,12 @@ class PlayerSetupScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(20),
               child: BouncyButton(
-                text: lang.translate(
-                  'players_btn_continue',
-                ), // <--- TEXTO DINÁMICO
+                text: lang.translate('players_btn_continue'),
                 onPressed: count >= GameConstants.minPlayers
-                    ? () => Navigator.pushNamed(context, '/config')
+                    ? () {
+                        SoundManager.playClick();
+                        Navigator.pushNamed(context, '/config');
+                      }
                     : null,
               ),
             ),
@@ -97,13 +103,14 @@ class _PlayerRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final game = Provider.of<GameProvider>(context, listen: false);
-    final lang = Provider.of<LanguageProvider>(
-      context,
-    ); // <--- INSTANCIAMOS EL IDIOMA AQUÍ TAMBIÉN
+    final lang = Provider.of<LanguageProvider>(context);
 
     if (player.isLocked) {
       return GameCard(
-        onTap: () => game.unlockPlayer(player.id),
+        onTap: () {
+          SoundManager.playClick();
+          game.unlockPlayer(player.id);
+        },
         borderHighlight: true,
         highlightColor: AppColors.accent,
         child: Row(
@@ -130,12 +137,15 @@ class _PlayerRow extends StatelessWidget {
           if (game.players.length > 3)
             IconButton(
               icon: const Icon(Icons.close, color: AppColors.error),
-              onPressed: () => game.removePlayer(player.id),
+              onPressed: () {
+                SoundManager.playClick();
+                game.removePlayer(player.id);
+              },
             ),
           Expanded(
             child: MinimalInput(
               controller: TextEditingController(text: player.name),
-              hint: lang.translate('players_input_name'), // <--- TEXTO DINÁMICO
+              hint: lang.translate('players_input_name'),
               onChanged: (v) => game.updatePlayer(player.id, name: v),
             ),
           ),
@@ -144,7 +154,7 @@ class _PlayerRow extends StatelessWidget {
             width: 80,
             child: MinimalInput(
               controller: TextEditingController(text: player.pin),
-              hint: lang.translate('players_input_pin'), // <--- TEXTO DINÁMICO
+              hint: lang.translate('players_input_pin'),
               isPassword: true,
               keyboard: TextInputType.number,
               onChanged: (v) => game.updatePlayer(player.id, pin: v),
@@ -152,7 +162,10 @@ class _PlayerRow extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.save, color: Colors.white),
-            onPressed: () => game.lockPlayer(player.id),
+            onPressed: () {
+              SoundManager.playClick();
+              game.lockPlayer(player.id);
+            },
           ),
         ],
       ),
