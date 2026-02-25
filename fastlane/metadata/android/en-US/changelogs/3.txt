@@ -4,12 +4,6 @@ Available Languages:
 🇪🇸 Spanish
 🇺🇸 English
 🇧🇷 Portuguese (Brazil)
-🇫🇷 French
-🇩🇪 German
-🇮🇳 Hindi
-🇯🇵 Japanese
-🇰🇷 Korean
-🇸🇦 Arabic
 
 ⚙️ Included Improvements:
 
