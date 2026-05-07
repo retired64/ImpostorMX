@@ -43,6 +43,7 @@ flutter:
     - assets/sounds/es/
     - assets/sounds/en/
     - assets/sounds/pt/
+    - assets/sounds/de/
 
   fonts:
     - family: Bungee

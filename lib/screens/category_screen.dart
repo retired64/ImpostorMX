@@ -148,6 +148,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
                         isSelected: lang.currentLanguage == 'pt',
                         onTap: () => lang.setLanguage('pt'),
                       ),
+                      const SizedBox(width: 10),
+                      _LangButton(
+                        text: 'DE',
+                        isSelected: lang.currentLanguage == 'de',
+                        onTap: () => lang.setLanguage('de'),
+                      ),
                     ],
                   ),
 
