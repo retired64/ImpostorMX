@@ -42,6 +42,7 @@ class RevealScreen extends StatefulWidget {
 class _RevealScreenState extends State<RevealScreen>
     with TickerProviderStateMixin {
   bool _isPeeking = false;
+  bool _hasFlipped = false;
 
   // ── Flip (card reveal) ────────────────────────
   late final AnimationController _flipCtrl = AnimationController(
@@ -106,6 +107,7 @@ class _RevealScreenState extends State<RevealScreen>
     Vibration.vibrate(duration: 40);
 
     await _flipCtrl.forward();
+    if (!_hasFlipped) setState(() => _hasFlipped = true);
     if (isImpostor && mounted) {
       _dimCtrl.forward();
       _startGlitchLoop();
@@ -287,20 +289,24 @@ class _RevealScreenState extends State<RevealScreen>
   //  Continue button
   // ─────────────────────────────────────────────
   Widget _buildContinueButton(LanguageProvider lang, GameProvider game) {
+    final canContinue = _hasFlipped;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: BouncyButton(
         text: lang.translate('reveal_btn_continue'),
         color: Colors.white,
-        onPressed: () {
-          final active = game.players.where((p) => p.isLocked).toList();
-          if (game.currentTurnIndex < active.length - 1) {
-            game.nextTurn();
+        icon: canContinue ? null : Icons.lock_outline,
+        onPressed: canContinue
+            ? () {
+                final active = game.players.where((p) => p.isLocked).toList();
+                if (game.currentTurnIndex < active.length - 1) {
+                  game.nextTurn();
             Navigator.pushReplacement(context, _fadeRoute(const LoginScreen()));
-          } else {
+                } else {
             Navigator.pushReplacement(context, _fadeRoute(const TimerScreen()));
-          }
-        },
+              }
+            }
+            : null,
       ),
     );
   }
