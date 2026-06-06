@@ -332,23 +332,32 @@ class _LoginScreenState extends State<LoginScreen>
   //  Numpad
   // ─────────────────────────────────────────────
   Widget _buildNumpad(Player p, BoxConstraints constraints) {
-    // 3 columns, responsive key size
-    final availableWidth =
-        constraints.maxWidth * 0.88; // respects horizontal padding
+    final availableWidth = constraints.maxWidth * 0.88;
     final keySpacing = availableWidth * 0.055;
-    final keySize = (availableWidth - keySpacing * 2) / 3;
+    final keySize = ((availableWidth - keySpacing * 2) / 3).floorToDouble();
+
+    Widget keyRow(List<Widget> keys) {
+      assert(keys.length == 3);
+      return Row(
+        children: [
+          keys[0],
+          SizedBox(width: keySpacing),
+          keys[1],
+          SizedBox(width: keySpacing),
+          keys[2],
+        ],
+      );
+    }
 
     return SizedBox(
       width: availableWidth,
       child: Column(
         children: [
-          // Rows 1-3: digits 1-9
           ...List.generate(3, (row) {
             return Padding(
               padding: EdgeInsets.only(bottom: keySpacing),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(3, (col) {
+              child: keyRow(
+                List.generate(3, (col) {
                   final digit = '${row * 3 + col + 1}';
                   return _NumKey(
                     val: digit,
@@ -359,15 +368,11 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             );
           }),
-          // Row 4: empty | 0 | backspace
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SizedBox(width: keySize, height: keySize), // spacer
-              _NumKey(val: '0', size: keySize, onTap: () => _tap('0', p)),
-              _BackspaceKey(size: keySize, onTap: _backspace),
-            ],
-          ),
+          keyRow([
+            SizedBox(width: keySize, height: keySize),
+            _NumKey(val: '0', size: keySize, onTap: () => _tap('0', p)),
+            _BackspaceKey(size: keySize, onTap: _backspace),
+          ]),
         ],
       ),
     );
