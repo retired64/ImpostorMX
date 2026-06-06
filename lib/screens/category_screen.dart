@@ -249,27 +249,35 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "impostormx.store",
-                            style: TextStyle(
-                              fontFamily: 'YoungSerif',
-                              fontSize: 14,
-                              color: AppColors.textDim,
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              "impostormx.store",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontFamily: 'YoungSerif',
+                                fontSize: 14,
+                                color: AppColors.textDim,
+                              ),
                             ),
-                          ),
-                          Text(
-                            lang.translate('txt_choose_theme'),
-                            style: const TextStyle(
-                              fontFamily: 'Bungee',
-                              fontSize: 32,
-                              color: AppColors.text,
+                            Text(
+                              lang.translate('txt_choose_theme'),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontFamily: 'Bungee',
+                                fontSize: 32,
+                                color: AppColors.text,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 12),
                       GestureDetector(
                         onTap: () => _showSettingsModal(context),
                         child: Container(
