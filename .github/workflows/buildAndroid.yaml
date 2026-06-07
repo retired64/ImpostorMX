@@ -63,10 +63,11 @@ jobs:
             echo "Error: No se encontró $CHANGELOG_FILE"
             exit 1
           fi
+          DELIMITER="CHANGELOG_$(date +%s)_$RANDOM"
           {
-            echo "body<<EOF"
+            echo "body<<$DELIMITER"
             cat "$CHANGELOG_FILE"
-            echo "EOF"
+            echo "$DELIMITER"
           } >> $GITHUB_OUTPUT
 
       - name: Rename APKs with architecture suffix
