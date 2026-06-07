@@ -55,20 +55,16 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
 
-      - name: Read changelog from fastlane
-        id: changelog
+      - name: Prepare release notes
         run: |
           CHANGELOG_FILE="fastlane/metadata/android/en-US/changelogs/${{ steps.version.outputs.version_code }}.txt"
           if [ ! -f "$CHANGELOG_FILE" ]; then
             echo "Error: No se encontró $CHANGELOG_FILE"
             exit 1
           fi
-          DELIMITER="CHANGELOG_$(date +%s)_$RANDOM"
-          {
-            echo "body<<$DELIMITER"
-            cat "$CHANGELOG_FILE"
-            echo "$DELIMITER"
-          } >> $GITHUB_OUTPUT
+          cat "$CHANGELOG_FILE" | tr -d '\r' > /tmp/release_notes.txt
+          echo "Contenido del changelog:"
+          cat /tmp/release_notes.txt
 
       - name: Rename APKs with architecture suffix
         run: |
@@ -82,7 +78,7 @@ jobs:
         with:
           tag_name: v${{ steps.version.outputs.version }}
           name: "Impostor MX v${{ steps.version.outputs.version }}"
-          body: ${{ steps.changelog.outputs.body }}
+          body_path: /tmp/release_notes.txt
           files: |
             build/app/outputs/flutter-apk/ImpostorMX-v${{ steps.version.outputs.version }}-armeabi-v7a.apk
             build/app/outputs/flutter-apk/ImpostorMX-v${{ steps.version.outputs.version }}-arm64-v8a.apk
