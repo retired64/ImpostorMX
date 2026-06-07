@@ -3,7 +3,7 @@ description: "Impostor MX es la versión digital del clásico juego de fiesta qu
 
 publish_to: 'none'
 
-version: 2.1.0+3
+version: 2.2.0+4
 
 environment:
   sdk: ^3.10.7

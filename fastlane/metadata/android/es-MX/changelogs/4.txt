@@ -1,0 +1,9 @@
+Novedades 2.2.0 – Idioma Alemán y Mejoras de Interfaz
+
+Nuevas Funciones:
+- 🇩🇪 Soporte para idioma alemán
+- Comportamiento mejorado del menú modal responsivo
+
+Correcciones:
+- Corregida la disposición del botón principal del menú modal
+- Mejoras de interfaz y usabilidad

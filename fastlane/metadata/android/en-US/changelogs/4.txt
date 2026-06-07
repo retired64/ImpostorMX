@@ -1,0 +1,9 @@
+What's New 2.2.0 – German Language & UI Improvements
+
+New Features:
+- 🇩🇪 German language support
+- Improved responsive modal menu behavior
+
+Bug Fixes:
+- Fixed modal menu main button layout
+- UI and usability improvements
