@@ -39,8 +39,9 @@ Cuando el tiempo termine, voten por quien crean que es el Impostor. Si atrapan a
 ## Descarga e Instalación
 
 **Opciones de descarga:**
-- **F-Droid:** [Próximamente disponible](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/33369)
-- **GitHub Releases:** [Descarga la última versión aquí](https://github.com/Retired64/impostorMX/releases)
+
+[<img src="docs/badges/fdroid.webp" alt="F-Droid" width="160">](https://f-droid.org/es/packages/com.impostormx.org/)
+[<img src="docs/badges/github.webp" alt="github releases" width="160">](https://github.com/Retired64/impostorMX/releases)
 
 Para instalar desde GitHub, simplemente descarga el archivo .APK de la última release e instálalo en tu dispositivo Android.
 
