@@ -98,7 +98,7 @@ class _BouncyButtonState extends State<BouncyButton>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (widget.icon != null) ...[
-                Icon(widget.icon, color: Colors.black87),
+                Icon(widget.icon, color: isDisabled ? Colors.white38 : Colors.black87),
                 const SizedBox(width: 8),
               ],
               Text(
