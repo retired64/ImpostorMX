@@ -12,12 +12,13 @@ import '../lang/es.dart';
 import '../lang/en.dart';
 import '../lang/pt.dart';
 import '../lang/de.dart';
+import '../lang/tr.dart';
 
 class LanguageProvider extends ChangeNotifier {
   static const String _prefsKey = 'user_language';
 
   // Idioma por defecto al iniciar (antes de detectar)
-  String _currentLanguage = 'es';
+  String _currentLanguage = 'en';
 
   // Getter para obtener el código del idioma actual ('es', 'en', 'pt', 'de')
   String get currentLanguage => _currentLanguage;
@@ -28,6 +29,7 @@ class LanguageProvider extends ChangeNotifier {
     'en': en,
     'pt': pt,
     'de': de,
+    'tr': tr,
   };
 
   // Mapa para los castigos por defecto según el idioma
@@ -36,6 +38,7 @@ class LanguageProvider extends ChangeNotifier {
     'en': defaultPunishmentsEn,
     'pt': defaultPunishmentsPt,
     'de': defaultPunishmentsDe,
+    'tr': defaultPunishmentsTr,
   };
 
   LanguageProvider() {

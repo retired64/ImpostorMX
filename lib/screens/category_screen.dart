@@ -122,39 +122,47 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   const Divider(color: Colors.white24),
                   const SizedBox(height: 15),
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.language,
-                        color: Colors.white54,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 10),
-                      _LangButton(
-                        text: 'ES',
-                        isSelected: lang.currentLanguage == 'es',
-                        onTap: () => lang.setLanguage('es'),
-                      ),
-                      const SizedBox(width: 10),
-                      _LangButton(
-                        text: 'EN',
-                        isSelected: lang.currentLanguage == 'en',
-                        onTap: () => lang.setLanguage('en'),
-                      ),
-                      const SizedBox(width: 10),
-                      _LangButton(
-                        text: 'PT',
-                        isSelected: lang.currentLanguage == 'pt',
-                        onTap: () => lang.setLanguage('pt'),
-                      ),
-                      const SizedBox(width: 10),
-                      _LangButton(
-                        text: 'DE',
-                        isSelected: lang.currentLanguage == 'de',
-                        onTap: () => lang.setLanguage('de'),
-                      ),
-                    ],
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.language,
+                          color: Colors.white54,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 15),
+                        _LangButton(
+                          text: 'ES',
+                          isSelected: lang.currentLanguage == 'es',
+                          onTap: () => lang.setLanguage('es'),
+                        ),
+                        const SizedBox(width: 10),
+                        _LangButton(
+                          text: 'EN',
+                          isSelected: lang.currentLanguage == 'en',
+                          onTap: () => lang.setLanguage('en'),
+                        ),
+                        const SizedBox(width: 10),
+                        _LangButton(
+                          text: 'PT',
+                          isSelected: lang.currentLanguage == 'pt',
+                          onTap: () => lang.setLanguage('pt'),
+                        ),
+                        const SizedBox(width: 10),
+                        _LangButton(
+                          text: 'DE',
+                          isSelected: lang.currentLanguage == 'de',
+                          onTap: () => lang.setLanguage('de'),
+                        ),
+                        const SizedBox(width: 10),
+                        _LangButton(
+                          text: 'TR',
+                          isSelected: lang.currentLanguage == 'tr',
+                          onTap: () => lang.setLanguage('tr'),
+                        ),
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 15),
