@@ -6529,7 +6529,7 @@ final List<Category> _categoriesDe = [
 final List<Category> _categoriesTr = [
   const Category(
     id: 'mix',
-    name: 'Random',
+    name: 'KARIŞIK',
     icon: '🎲',
     color: Colors.purple,
     words: [
@@ -6787,7 +6787,7 @@ final List<Category> _categoriesTr = [
   ),
   const Category(
     id: 'fiesta',
-    name: 'Party',
+    name: 'PARTİ',
     icon: '🍻',
     color: Colors.pink,
     words: [
@@ -7054,7 +7054,7 @@ final List<Category> _categoriesTr = [
   ),
   const Category(
     id: 'cine',
-    name: 'Movies',
+    name: 'FİLMLER',
     icon: '🎬',
     color: Colors.blue,
     words: [
@@ -7329,7 +7329,7 @@ final List<Category> _categoriesTr = [
   ),
   const Category(
     id: 'comida',
-    name: 'Food',
+    name: 'YEMEKLER',
     icon: '🌮',
     color: Colors.orange,
     words: [
@@ -7629,7 +7629,7 @@ final List<Category> _categoriesTr = [
   ),
   const Category(
     id: 'lugares',
-    name: 'Places',
+    name: 'MEKANLAR',
     icon: '🌍',
     color: Colors.teal,
     words: [
@@ -7894,7 +7894,7 @@ final List<Category> _categoriesTr = [
   ),
   const Category(
     id: 'animales',
-    name: 'Animals',
+    name: 'HAYVANLAR',
     icon: '🦁',
     color: Colors.green,
     words: [
