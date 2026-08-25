@@ -6,7 +6,7 @@ const Map<String, String> tr = {
   'txt_support': 'Geliştiriciyi destekle!',
   'txt_version': 'v2.1 Open Source - by Retired64',
   'btn_kofi': 'Bana kahve ısmarla',
-  'txt_choose_theme': 'Bir tema seç',
+  'txt_choose_theme': 'BİR TEMA SEÇ',
   'txt_cards': 'kart',
   'btn_edit': 'Düzenle',
   'btn_delete': 'Sil',
