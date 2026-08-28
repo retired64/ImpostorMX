@@ -41,6 +41,24 @@ class Player {
     this.isLocked = false,
     this.role = 'civilian',
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'pin': pin,
+      'isLocked': isLocked,
+    };
+  }
+
+  factory Player.fromMap(Map<String, dynamic> map) {
+    return Player(
+      id: map['id'],
+      name: map['name'] ?? '',
+      pin: map['pin'] ?? '',
+      isLocked: map['isLocked'] ?? false,
+    );
+  }
 }
 
 enum GameStatus { setup, playing, finished }
@@ -95,10 +113,32 @@ class GameProvider with ChangeNotifier {
     _loadPunishments();
   }
 
-  void _initGame() {
-    for (int i = 0; i < 4; i++) {
-      _addEmptyPlayer();
+  Future<void> _initGame() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? storedPlayers = prefs.getString('saved_players');
+    
+    if (storedPlayers != null) {
+      try {
+        final List<dynamic> decoded = jsonDecode(storedPlayers);
+        players = decoded.map((p) => Player.fromMap(p)).toList();
+        notifyListeners();
+        return;
+      } catch (e) {
+        debugPrint("Error loading players: $e");
+      }
     }
+    
+    // If no saved players, create 4 empty ones
+    for (int i = 0; i < 4; i++) {
+      _addEmptyPlayer(shouldNotify: false);
+    }
+    notifyListeners();
+  }
+
+  Future<void> _savePlayers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String encoded = jsonEncode(players.map((p) => p.toMap()).toList());
+    await prefs.setString('saved_players', encoded);
   }
 
   Future<void> _loadCustomCategories() async {
@@ -208,7 +248,7 @@ class GameProvider with ChangeNotifier {
 
   void _hapticLight() => Vibration.vibrate(duration: 10);
 
-  void _addEmptyPlayer() {
+  void _addEmptyPlayer({bool shouldNotify = true}) {
     players.add(
       Player(
         id:
@@ -216,19 +256,20 @@ class GameProvider with ChangeNotifier {
             _random.nextInt(999).toString(),
       ),
     );
-    notifyListeners();
+    if (shouldNotify) notifyListeners();
   }
 
   void addPlayer() {
     _addEmptyPlayer();
     _hapticLight();
-    notifyListeners();
+    _savePlayers(); // Save
   }
 
   void removePlayer(String id) {
     players.removeWhere((p) => p.id == id);
     Vibration.vibrate(pattern: GameConstants.hapticTap);
     notifyListeners();
+    _savePlayers(); // Save
   }
 
   void updatePlayer(String id, {String? name, String? pin}) {
@@ -236,6 +277,10 @@ class GameProvider with ChangeNotifier {
     if (idx != -1) {
       if (name != null) players[idx].name = name;
       if (pin != null) players[idx].pin = pin;
+      // We don't call notifyListeners here for TextField performance.
+      // But we need to save. Better to save on focus lost rather than every keystroke,
+      // but for now, let's just save to be safe.
+      _savePlayers(); 
     }
   }
 
@@ -249,6 +294,7 @@ class GameProvider with ChangeNotifier {
       players[idx].isLocked = true;
       Vibration.vibrate(pattern: GameConstants.hapticSuccess);
       notifyListeners();
+      _savePlayers(); // Save
       return true;
     }
     Vibration.vibrate(pattern: GameConstants.hapticError);
@@ -259,9 +305,10 @@ class GameProvider with ChangeNotifier {
     final idx = players.indexWhere((p) => p.id == id);
     if (idx != -1) {
       players[idx].isLocked = false;
-      players[idx].pin = '';
+      // Removed PIN reset since we want to persist it now
       _hapticLight();
       notifyListeners();
+      _savePlayers(); // Save
     }
   }
 
@@ -442,9 +489,15 @@ class GameProvider with ChangeNotifier {
   void exitGame() {
     _cleanup();
     selectedCategories.clear(); // Limpia los temas
-    players.clear(); // Elimina los jugadores
-    _initGame(); // Crea 4 jugadores vacíos de nuevo
+    
+    // Unlock players but keep names and PINs
+    for (var p in players) {
+      p.isLocked = false;
+      p.role = 'civilian';
+    }
+    
     status = GameStatus.setup;
+    _savePlayers(); // Save final state
     notifyListeners();
   }
 
