@@ -41,6 +41,24 @@ class Player {
     this.isLocked = false,
     this.role = 'civilian',
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'pin': pin,
+      'isLocked': isLocked,
+    };
+  }
+
+  factory Player.fromMap(Map<String, dynamic> map) {
+    return Player(
+      id: map['id'],
+      name: map['name'] ?? '',
+      pin: map['pin'] ?? '',
+      isLocked: map['isLocked'] ?? false,
+    );
+  }
 }
 
 enum GameStatus { setup, playing, finished }
@@ -95,10 +113,32 @@ class GameProvider with ChangeNotifier {
     _loadPunishments();
   }
 
-  void _initGame() {
-    for (int i = 0; i < 4; i++) {
-      _addEmptyPlayer();
+  Future<void> _initGame() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? storedPlayers = prefs.getString('saved_players');
+    
+    if (storedPlayers != null) {
+      try {
+        final List<dynamic> decoded = jsonDecode(storedPlayers);
+        players = decoded.map((p) => Player.fromMap(p)).toList();
+        notifyListeners();
+        return;
+      } catch (e) {
+        debugPrint("Error loading players: $e");
+      }
     }
+    
+    // Eğer kayıtlı oyuncu yoksa 4 tane boş oluştur
+    for (int i = 0; i < 4; i++) {
+      _addEmptyPlayer(shouldNotify: false);
+    }
+    notifyListeners();
+  }
+
+  Future<void> _savePlayers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String encoded = jsonEncode(players.map((p) => p.toMap()).toList());
+    await prefs.setString('saved_players', encoded);
   }
 
   Future<void> _loadCustomCategories() async {
@@ -208,7 +248,7 @@ class GameProvider with ChangeNotifier {
 
   void _hapticLight() => Vibration.vibrate(duration: 10);
 
-  void _addEmptyPlayer() {
+  void _addEmptyPlayer({bool shouldNotify = true}) {
     players.add(
       Player(
         id:
@@ -216,19 +256,20 @@ class GameProvider with ChangeNotifier {
             _random.nextInt(999).toString(),
       ),
     );
-    notifyListeners();
+    if (shouldNotify) notifyListeners();
   }
 
   void addPlayer() {
     _addEmptyPlayer();
     _hapticLight();
-    notifyListeners();
+    _savePlayers(); // Kaydet
   }
 
   void removePlayer(String id) {
     players.removeWhere((p) => p.id == id);
     Vibration.vibrate(pattern: GameConstants.hapticTap);
     notifyListeners();
+    _savePlayers(); // Kaydet
   }
 
   void updatePlayer(String id, {String? name, String? pin}) {
@@ -236,6 +277,10 @@ class GameProvider with ChangeNotifier {
     if (idx != -1) {
       if (name != null) players[idx].name = name;
       if (pin != null) players[idx].pin = pin;
+      // Burada notifyListeners çağırmıyoruz genelde TextField performansı için
+      // Ama kaydetmemiz lazım. Yazarken her harfte kaydetmek yerine, focus bittiğinde kaydetmek daha iyi
+      // ama şimdilik garantici olup kaydedelim.
+      _savePlayers(); 
     }
   }
 
@@ -249,6 +294,7 @@ class GameProvider with ChangeNotifier {
       players[idx].isLocked = true;
       Vibration.vibrate(pattern: GameConstants.hapticSuccess);
       notifyListeners();
+      _savePlayers(); // Kaydet
       return true;
     }
     Vibration.vibrate(pattern: GameConstants.hapticError);
@@ -259,9 +305,10 @@ class GameProvider with ChangeNotifier {
     final idx = players.indexWhere((p) => p.id == id);
     if (idx != -1) {
       players[idx].isLocked = false;
-      players[idx].pin = '';
+      // PIN'i sıfırlama özelliğini kaldırdık çünkü artık kaydetmek istiyoruz
       _hapticLight();
       notifyListeners();
+      _savePlayers(); // Kaydet
     }
   }
 
@@ -442,9 +489,15 @@ class GameProvider with ChangeNotifier {
   void exitGame() {
     _cleanup();
     selectedCategories.clear(); // Limpia los temas
-    players.clear(); // Elimina los jugadores
-    _initGame(); // Crea 4 jugadores vacíos de nuevo
+    
+    // Oyuncuların kilitlerini açıyoruz ama isim ve PIN'lerini koruyoruz
+    for (var p in players) {
+      p.isLocked = false;
+      p.role = 'civilian';
+    }
+    
     status = GameStatus.setup;
+    _savePlayers(); // Son durumu kaydet
     notifyListeners();
   }
 
