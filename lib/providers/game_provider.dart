@@ -128,7 +128,7 @@ class GameProvider with ChangeNotifier {
       }
     }
     
-    // Eğer kayıtlı oyuncu yoksa 4 tane boş oluştur
+    // If no saved players, create 4 empty ones
     for (int i = 0; i < 4; i++) {
       _addEmptyPlayer(shouldNotify: false);
     }
@@ -262,14 +262,14 @@ class GameProvider with ChangeNotifier {
   void addPlayer() {
     _addEmptyPlayer();
     _hapticLight();
-    _savePlayers(); // Kaydet
+    _savePlayers(); // Save
   }
 
   void removePlayer(String id) {
     players.removeWhere((p) => p.id == id);
     Vibration.vibrate(pattern: GameConstants.hapticTap);
     notifyListeners();
-    _savePlayers(); // Kaydet
+    _savePlayers(); // Save
   }
 
   void updatePlayer(String id, {String? name, String? pin}) {
@@ -277,9 +277,9 @@ class GameProvider with ChangeNotifier {
     if (idx != -1) {
       if (name != null) players[idx].name = name;
       if (pin != null) players[idx].pin = pin;
-      // Burada notifyListeners çağırmıyoruz genelde TextField performansı için
-      // Ama kaydetmemiz lazım. Yazarken her harfte kaydetmek yerine, focus bittiğinde kaydetmek daha iyi
-      // ama şimdilik garantici olup kaydedelim.
+      // We don't call notifyListeners here for TextField performance.
+      // But we need to save. Better to save on focus lost rather than every keystroke,
+      // but for now, let's just save to be safe.
       _savePlayers(); 
     }
   }
@@ -294,7 +294,7 @@ class GameProvider with ChangeNotifier {
       players[idx].isLocked = true;
       Vibration.vibrate(pattern: GameConstants.hapticSuccess);
       notifyListeners();
-      _savePlayers(); // Kaydet
+      _savePlayers(); // Save
       return true;
     }
     Vibration.vibrate(pattern: GameConstants.hapticError);
@@ -305,10 +305,10 @@ class GameProvider with ChangeNotifier {
     final idx = players.indexWhere((p) => p.id == id);
     if (idx != -1) {
       players[idx].isLocked = false;
-      // PIN'i sıfırlama özelliğini kaldırdık çünkü artık kaydetmek istiyoruz
+      // Removed PIN reset since we want to persist it now
       _hapticLight();
       notifyListeners();
-      _savePlayers(); // Kaydet
+      _savePlayers(); // Save
     }
   }
 
@@ -490,14 +490,14 @@ class GameProvider with ChangeNotifier {
     _cleanup();
     selectedCategories.clear(); // Limpia los temas
     
-    // Oyuncuların kilitlerini açıyoruz ama isim ve PIN'lerini koruyoruz
+    // Unlock players but keep names and PINs
     for (var p in players) {
       p.isLocked = false;
       p.role = 'civilian';
     }
     
     status = GameStatus.setup;
-    _savePlayers(); // Son durumu kaydet
+    _savePlayers(); // Save final state
     notifyListeners();
   }
 
