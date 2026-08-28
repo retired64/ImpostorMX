@@ -42,6 +42,7 @@ class RevealScreen extends StatefulWidget {
 class _RevealScreenState extends State<RevealScreen>
     with TickerProviderStateMixin {
   bool _isPeeking = false;
+  bool _hasFlipped = false;
 
   // ── Flip (card reveal) ────────────────────────
   late final AnimationController _flipCtrl = AnimationController(
@@ -106,6 +107,8 @@ class _RevealScreenState extends State<RevealScreen>
     Vibration.vibrate(duration: 40);
 
     await _flipCtrl.forward();
+    if (mounted) setState(() => _hasFlipped = true);
+
     if (isImpostor && mounted) {
       _dimCtrl.forward();
       _startGlitchLoop();
@@ -292,7 +295,7 @@ class _RevealScreenState extends State<RevealScreen>
       child: BouncyButton(
         text: lang.translate('reveal_btn_continue'),
         color: Colors.white,
-        onPressed: () {
+        onPressed: _hasFlipped ? () {
           final active = game.players.where((p) => p.isLocked).toList();
           if (game.currentTurnIndex < active.length - 1) {
             game.nextTurn();
@@ -300,7 +303,7 @@ class _RevealScreenState extends State<RevealScreen>
           } else {
             Navigator.pushReplacement(context, _fadeRoute(const TimerScreen()));
           }
-        },
+        } : null,
       ),
     );
   }
