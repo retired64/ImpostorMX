@@ -432,7 +432,7 @@ class _SecurityPattern extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'IMPOSTOR MX',
+                  lang.translate('reveal_app_brand'),
                   style: TextStyle(
                     fontFamily: 'YoungSerif',
                     fontSize: cardWidth * 0.06,
@@ -615,7 +615,7 @@ class _CivilianContent extends StatelessWidget {
         ),
         SizedBox(height: cardHeight * 0.04),
         Text(
-          'TU PALABRA SECRETA',
+          lang.translate('reveal_your_secret_word'),
           style: TextStyle(
             fontFamily: 'YoungSerif',
             fontSize: cardWidth * 0.055,

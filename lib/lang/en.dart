@@ -83,6 +83,8 @@ const Map<String, String> en = {
   'reveal_deceive': 'Deceive everyone',
   'reveal_top_secret': 'TOP SECRET',
   'reveal_btn_continue': 'CONTINUE',
+  'reveal_your_secret_word': 'YOUR SECRET WORD',
+  'reveal_app_brand': 'IMPOSTOR MX',
 
   // Timer Screen
   'timer_time_up': 'TIME UP',
